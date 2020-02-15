@@ -1,7 +1,7 @@
 <template>
-    <v-container fluid>
-        <EdgeBundling />
-    </v-container>
+    <!-- <v-container fluid> -->
+    <EdgeBundling />
+    <!-- </v-container> -->
 </template>
 
 <script>

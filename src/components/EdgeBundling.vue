@@ -1,13 +1,29 @@
 <template>
     <v-row>
-        <v-col cols="8">
-            <svg :width="diameter" :height="diameter">
-                <g :transform="style" id="chart" />
-            </svg>
+        <v-col lg="7" md="7" sm="12" cols="12">
+            <div class="svg-container">
+                <div class id="edge">
+                    <svg
+                        preserveAspectRatio="xMidYMid meet"
+                        viewBox="0 0 800 750"
+                        class="svg-content-responsive"
+                    >
+                        <!-- <g :transform="style" id="chart" /> -->
+                    </svg>
+                </div>
+            </div>
         </v-col>
-        <v-col cols="4">
-            <v-subheader class="pl-0">Diameter:</v-subheader>
-            <v-slider v-model="updateDiameter" max="1000" min="100" :size="diameter" thumb-label></v-slider>
+        <v-col lg="5" md="5" sm="12" cols="12">
+            <div>
+                <v-subheader class="pl-0">Diameter:</v-subheader>
+                <v-slider
+                    v-model="updateDiameter"
+                    max="1000"
+                    min="100"
+                    :size="diameter"
+                    thumb-label
+                ></v-slider>
+            </div>
         </v-col>
     </v-row>
 </template>
@@ -21,7 +37,7 @@
     export default {
         data() {
             return {
-                diameter: 800
+                diameter: 750
             };
         },
         mounted() {
@@ -46,14 +62,11 @@
                         return (d.x / 180) * Math.PI;
                     });
 
-                // var svg = d3
-                //     .select("svg")
-                //     .append("g")
-                //     .attr(
-                //         "transform",
-                //         "translate(" + this.getRadius + "," + this.getRadius + ")"
-                //     );
-                var svg = d3.select("#chart");
+                var svg = d3
+                    .select("svg")
+                    .append("g")
+                    .attr("transform", "translate(400, 375)");
+                // var svg = d3.select("#chart");
                 var link = svg.append("g").selectAll(".link");
                 var node = svg.append("g").selectAll(".node");
 
@@ -142,9 +155,9 @@
             }
         },
         computed: {
-            style() {
-                return `translate(${this.getRadius},${this.getRadius})`;
-            },
+            // style() {
+            //     return `translate(${this.getRadius},${this.getRadius})`;
+            // },
             getRadius() {
                 // 480
                 return this.diameter / 2;
@@ -166,8 +179,12 @@
 </script>
 
 <style>
+svg {
+    /* background-color: lightskyblue; */
+}
+
 .node {
-    font: 10px sans-serif;
+    font: 0.5em sans-serif;
 }
 
 .link {
