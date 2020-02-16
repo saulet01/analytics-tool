@@ -1,6 +1,12 @@
 <template>
+    <v-container fluid>
+        <h1 class="text-center display-2 my-2">Analyzing Email Data:</h1>
+        <!-- <hr /> -->
+        <EdgeBundling />
+    </v-container>
+
     <!-- <v-container fluid> -->
-    <EdgeBundling />
+
     <!-- </v-container> -->
 </template>
 
@@ -15,3 +21,9 @@
         }
     };
 </script>
+
+<style scoped>
+h1 {
+    color: #1967c0;
+}
+</style>

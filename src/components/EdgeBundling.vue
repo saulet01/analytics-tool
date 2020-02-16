@@ -5,7 +5,7 @@
                 <div class id="edge">
                     <svg
                         preserveAspectRatio="xMidYMid meet"
-                        viewBox="0 0 800 750"
+                        viewBox="0 0 800 650"
                         class="svg-content-responsive"
                     >
                         <!-- <g :transform="style" id="chart" /> -->
@@ -46,7 +46,19 @@
         },
         methods: {
             async fetchData() {
-                let data = await d3.json("./flare.json");
+                let data = await d3.csv("./email_headers.csv");
+                data = data.map(d => {
+                    let breaker = d.To.split(",").map(function(item) {
+                        return item.trim();
+                    });
+                    // let username = d.From.split("@");
+                    // username = username[1] + "." + username[0];
+                    return {
+                        name: d.From,
+                        imports: breaker
+                    };
+                });
+                // console.log(data);
                 this.drawEdges(data);
                 // this.loadData = data;
             },
@@ -54,7 +66,7 @@
                 var cluster = d3.cluster().size([360, this.getInnerRadius]);
                 var line = d3
                     .radialLine()
-                    .curve(d3.curveBundle.beta(0.85))
+                    .curve(d3.curveBundle.beta(0.9))
                     .radius(function(d) {
                         return d.y;
                     })
@@ -65,14 +77,12 @@
                 var svg = d3
                     .select("svg")
                     .append("g")
-                    .attr("transform", "translate(400, 375)");
+                    .attr("transform", "translate(400, 325)");
                 // var svg = d3.select("#chart");
                 var link = svg.append("g").selectAll(".link");
                 var node = svg.append("g").selectAll(".node");
 
-                var root = this.packageHierarchy(data).sum(function(d) {
-                    return d.size;
-                });
+                var root = this.packageHierarchy(data);
 
                 cluster(root);
 
@@ -107,6 +117,12 @@
                     })
                     .text(function(d) {
                         return d.data.key;
+                    })
+                    .append("text")
+                    .text("Whatsaaaaaaaaaaaaaap")
+                    .attr("dy", "1em")
+                    .on("mouseover", d => {
+                        console.log(d);
                     });
             },
             packageHierarchy(data) {
@@ -122,7 +138,8 @@
                                 name.substring(0, (i = name.lastIndexOf(".")))
                             );
                             node.parent.children.push(node);
-                            node.key = name.substring(i + 1);
+                            // node.key = name.substring(i + 1);
+                            node.key = name;
                         }
                     }
                     return node;
@@ -164,7 +181,7 @@
             },
             getInnerRadius() {
                 // 360
-                return this.getRadius - 120;
+                return this.getRadius - 150;
             },
             updateDiameter: {
                 get() {
