@@ -37,7 +37,8 @@
     export default {
         data() {
             return {
-                diameter: 750
+                diameter: 750,
+                records: ""
             };
         },
         mounted() {
@@ -47,6 +48,13 @@
         methods: {
             async fetchData() {
                 let data = await d3.csv("./email_headers.csv");
+                let records = await d3.csv("./EmployeeRecords.csv");
+                records = records.map(d => {
+                    return {
+                        email: d.EmailAddress.toLowerCase(),
+                        cluster: d.CurrentEmploymentType.replace(/\s+/g, "")
+                    };
+                });
                 data = data.map(d => {
                     let breaker = d.To.split(",").map(function(item) {
                         return item.trim();
@@ -58,9 +66,11 @@
                         imports: breaker
                     };
                 });
+                console.log(records);
+
                 // console.log(data);
+                // this.records = records;
                 this.drawEdges(data);
-                // this.loadData = data;
             },
             drawEdges(data) {
                 var cluster = d3.cluster().size([360, this.getInnerRadius]);
