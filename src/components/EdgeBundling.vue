@@ -51,42 +51,50 @@
                 let records = await d3.csv("./EmployeeRecords.csv");
                 records = records.map(d => {
                     return {
-                        email: d.EmailAddress.toLowerCase(),
-                        type: d.CurrentEmploymentType.replace(/\s+/g, "")
+                        email: d.EmailAddress,
+                        type: d.CurrentEmploymentType
                     };
                 });
-                let filteredArray = [];
+                // console.log(records);
+
+                // console.log(found);
+
                 data = data.map((d, i) => {
                     let breaker = d.To.split(",").map(function(item) {
-                        return item.trim().toLowerCase();
+                        item = item.trim();
+                        let searchType = records.find(
+                            element => element.email === item
+                        );
+                        if (searchType) {
+                            return searchType["type"] + "." + item;
+                        } else {
+                            return "Other." + item;
+                        }
                     });
+
+                    let found = records.find(element => element.email === d.From);
+
                     // let username = d.From.split("@");
                     // username = username[1] + "." + username[0];
-
-                    if (i % 1) {
+                    if (found) {
                         return {
-                            name: "Technology." + d.From.toLowerCase(),
+                            name: found["type"] + "." + d.From,
                             imports: breaker
                         };
                     } else {
                         return {
-                            name: "Administration." + d.From.toLowerCase(),
+                            name: "Other." + d.From,
                             imports: breaker
                         };
                     }
                 });
-
-                console.log(data);
-                // console.log(records);
-
-                // this.records = records;
                 this.drawEdges(data);
             },
             drawEdges(data) {
                 var cluster = d3.cluster().size([360, this.getInnerRadius]);
                 var line = d3
                     .radialLine()
-                    .curve(d3.curveBundle.beta(0.9))
+                    .curve(d3.curveBundle.beta(0.81))
                     .radius(function(d) {
                         return d.y;
                     })
@@ -119,7 +127,7 @@
 
                 node.append("text")
                     .attr("class", "node")
-                    .attr("dy", "0.31em")
+                    .attr("dy", "0.28em")
                     .attr("transform", function(d) {
                         return (
                             "rotate(" +
@@ -136,26 +144,6 @@
                     .text(function(d) {
                         return d.data.key.split("@")[0];
                     });
-
-                // node.append("text")
-                //     .attr("class", "node")
-                //     .attr("dy", "1.5em")
-                //     .attr("transform", function(d) {
-                //         return (
-                //             "rotate(" +
-                //             (d.x - 90) +
-                //             ")translate(" +
-                //             (d.y + 8) +
-                //             ",0)" +
-                //             (d.x < 180 ? "" : "rotate(180)")
-                //         );
-                //     })
-                //     .attr("text-anchor", function(d) {
-                //         return d.x < 180 ? "start" : "end";
-                //     })
-                //     .text(function(d) {
-                //         return d.data.key.split("@")[1];
-                //     });
             },
             packageHierarchy(data) {
                 var map = {};
@@ -166,23 +154,22 @@
                     if (!node) {
                         node = map[name] = data || { name: name, children: [] };
                         if (name.length) {
-                            // node.parent = "Text";
+                            // node.parent = 'Text'
                             node.parent = find(
-                                name.substring(0, (i = name.lastIndexOf(".")))
+                                name.substring(0, (i = name.indexOf(".")))
                             );
                             node.parent.children.push(node);
                             // node.key = name.substring(i + 1);
                             node.key = name;
                         }
                     }
-                    // console.log(node);
                     return node;
                 }
 
                 data.forEach(function(d) {
                     find(d.name, d);
                 });
-                // console.log(map);
+                console.log(map);
                 return d3.hierarchy(map[""]);
             },
             packageImports(nodes) {
