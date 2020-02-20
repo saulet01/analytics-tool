@@ -52,23 +52,33 @@
                 records = records.map(d => {
                     return {
                         email: d.EmailAddress.toLowerCase(),
-                        cluster: d.CurrentEmploymentType.replace(/\s+/g, "")
+                        type: d.CurrentEmploymentType.replace(/\s+/g, "")
                     };
                 });
-                data = data.map(d => {
+                let filteredArray = [];
+                data = data.map((d, i) => {
                     let breaker = d.To.split(",").map(function(item) {
-                        return item.trim();
+                        return item.trim().toLowerCase();
                     });
                     // let username = d.From.split("@");
                     // username = username[1] + "." + username[0];
-                    return {
-                        name: d.From,
-                        imports: breaker
-                    };
-                });
-                console.log(records);
 
-                // console.log(data);
+                    if (i % 1) {
+                        return {
+                            name: "Technology." + d.From.toLowerCase(),
+                            imports: breaker
+                        };
+                    } else {
+                        return {
+                            name: "Administration." + d.From.toLowerCase(),
+                            imports: breaker
+                        };
+                    }
+                });
+
+                console.log(data);
+                // console.log(records);
+
                 // this.records = records;
                 this.drawEdges(data);
             },
@@ -93,7 +103,6 @@
                 var node = svg.append("g").selectAll(".node");
 
                 var root = this.packageHierarchy(data);
-
                 cluster(root);
 
                 link = link
@@ -106,10 +115,9 @@
                     .attr("class", "link")
                     .attr("d", line);
 
-                node = node
-                    .data(root.leaves())
-                    .enter()
-                    .append("text")
+                node = node.data(root.leaves()).enter();
+
+                node.append("text")
                     .attr("class", "node")
                     .attr("dy", "0.31em")
                     .attr("transform", function(d) {
@@ -126,14 +134,28 @@
                         return d.x < 180 ? "start" : "end";
                     })
                     .text(function(d) {
-                        return d.data.key;
-                    })
-                    .append("text")
-                    .text("Whatsaaaaaaaaaaaaaap")
-                    .attr("dy", "1em")
-                    .on("mouseover", d => {
-                        console.log(d);
+                        return d.data.key.split("@")[0];
                     });
+
+                // node.append("text")
+                //     .attr("class", "node")
+                //     .attr("dy", "1.5em")
+                //     .attr("transform", function(d) {
+                //         return (
+                //             "rotate(" +
+                //             (d.x - 90) +
+                //             ")translate(" +
+                //             (d.y + 8) +
+                //             ",0)" +
+                //             (d.x < 180 ? "" : "rotate(180)")
+                //         );
+                //     })
+                //     .attr("text-anchor", function(d) {
+                //         return d.x < 180 ? "start" : "end";
+                //     })
+                //     .text(function(d) {
+                //         return d.data.key.split("@")[1];
+                //     });
             },
             packageHierarchy(data) {
                 var map = {};
@@ -144,6 +166,7 @@
                     if (!node) {
                         node = map[name] = data || { name: name, children: [] };
                         if (name.length) {
+                            // node.parent = "Text";
                             node.parent = find(
                                 name.substring(0, (i = name.lastIndexOf(".")))
                             );
@@ -152,13 +175,14 @@
                             node.key = name;
                         }
                     }
+                    // console.log(node);
                     return node;
                 }
 
                 data.forEach(function(d) {
                     find(d.name, d);
                 });
-
+                // console.log(map);
                 return d3.hierarchy(map[""]);
             },
             packageImports(nodes) {
