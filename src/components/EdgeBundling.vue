@@ -1,29 +1,34 @@
 <template>
     <v-row>
         <v-col lg="7" md="7" sm="12" cols="12">
-            <div class="svg-container">
-                <div class id="edge">
-                    <svg
-                        preserveAspectRatio="xMidYMid meet"
-                        viewBox="0 0 800 650"
-                        class="svg-content-responsive"
-                    >
-                        <!-- <g :transform="style" id="chart" /> -->
-                    </svg>
+            <v-card>
+                <div class="svg-container">
+                    <div class id="edge">
+                        <svg
+                            preserveAspectRatio="xMidYMid meet"
+                            viewBox="0 0 800 650"
+                            class="svg-content-responsive"
+                        >
+                            <!-- <g :transform="style" id="chart" /> -->
+                        </svg>
+                    </div>
                 </div>
-            </div>
+            </v-card>
         </v-col>
         <v-col lg="5" md="5" sm="12" cols="12">
-            <div>
-                <v-subheader class="pl-0">Diameter:</v-subheader>
-                <v-slider
-                    v-model="updateDiameter"
-                    max="1000"
-                    min="100"
-                    :size="diameter"
-                    thumb-label
-                ></v-slider>
-            </div>
+            <v-card class="mx-auto">
+                <v-card-title class="headline">Interaction</v-card-title>
+                <v-card-text>
+                    <v-subheader class="pl-0">Diameter:</v-subheader>
+                    <v-slider
+                        v-model="updateDiameter"
+                        max="1000"
+                        min="100"
+                        :size="diameter"
+                        thumb-label
+                    ></v-slider>
+                </v-card-text>
+            </v-card>
         </v-col>
     </v-row>
 </template>
@@ -55,10 +60,6 @@
                         type: d.CurrentEmploymentType
                     };
                 });
-                // console.log(records);
-
-                // console.log(found);
-
                 data = data.map((d, i) => {
                     let breaker = d.To.split(",").map(function(item) {
                         item = item.trim();
@@ -143,7 +144,49 @@
                     })
                     .text(function(d) {
                         return d.data.key.split("@")[0];
+                    })
+                    .on("mouseover", mouseovered)
+                    .on("mouseout", mouseouted);
+
+                function outed(d) {
+                    console.log(d3.select(this));
+                }
+
+                function mouseovered(d) {
+                    node.each(function(n) {
+                        n.target = n.source = false;
                     });
+
+                    link.classed("link--target", function(l) {
+                        if (l.target === d) return (l.source.source = true);
+                    })
+                        .classed("link--source", function(l) {
+                            if (l.source === d) return (l.target.target = true);
+                        })
+                        .filter(function(l) {
+                            return l.target === d || l.source === d;
+                        })
+                        .each(function() {
+                            this.parentNode.appendChild(this);
+                        });
+
+                    node.classed("node--target", function(n) {
+                        return n.target;
+                    }).classed("node--source", function(n) {
+                        return n.source;
+                    });
+                }
+                function mouseouted() {
+                    link.classed("link--target", false).classed(
+                        "link--source",
+                        false
+                    );
+
+                    node.classed("node--target", false).classed(
+                        "node--source",
+                        false
+                    );
+                }
             },
             packageHierarchy(data) {
                 var map = {};
@@ -169,7 +212,6 @@
                 data.forEach(function(d) {
                     find(d.name, d);
                 });
-                console.log(map);
                 return d3.hierarchy(map[""]);
             },
             packageImports(nodes) {
@@ -222,13 +264,45 @@ svg {
 }
 
 .node {
-    font: 0.5em sans-serif;
+    font: 300 9px "Helvetica Neue", Helvetica, Arial, sans-serif;
+    fill: #000;
+}
+.node:hover {
+    fill: #000;
 }
 
 .link {
     stroke: steelblue;
-    stroke-opacity: 0.5;
+    stroke-opacity: 0.4;
     fill: none;
     pointer-events: none;
+}
+
+.node:hover,
+.node--source,
+.node--target {
+    font-weight: 700;
+}
+
+.node--source {
+    fill: #2ca02c;
+}
+
+.node--target {
+    fill: #d62728;
+}
+
+.link--source,
+.link--target {
+    stroke-opacity: 1;
+    stroke-width: 2px;
+}
+
+.link--source {
+    stroke: #d62728;
+}
+
+.link--target {
+    stroke: #2ca02c;
 }
 </style>
