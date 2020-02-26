@@ -9,7 +9,26 @@
                             viewBox="0 0 800 650"
                             class="svg-content-responsive"
                         >
-                            <!-- <g :transform="style" id="chart" /> -->
+                            <g :transform="style">
+                                <g>
+                                    <path
+                                        class="link"
+                                        v-for="b in getLinks"
+                                        :key="b.id"
+                                        :d="getLines()"
+                                    />
+                                </g>
+                                <g>
+                                    <text
+                                        class="node"
+                                        v-for="d in getNodes"
+                                        :key="d.id"
+                                        :dy="d.dy"
+                                        :text-anchor="d.textAnchor"
+                                        :transform="d.transform"
+                                    >{{ d.text }}</text>
+                                </g>
+                            </g>
                         </svg>
                     </div>
                 </div>
@@ -42,13 +61,15 @@
     export default {
         data() {
             return {
+                data: [],
                 diameter: 750,
-                records: ""
+                records: "",
+                rootLeaves: ""
             };
         },
         mounted() {
             this.fetchData();
-            // this.drawEdges();
+            // this.drawNodes();
         },
         methods: {
             async fetchData() {
@@ -91,108 +112,44 @@
                         };
                     }
                 });
-                this.drawEdges(data);
+                this.data = data;
             },
-            drawEdges(data) {
-                var cluster = d3.cluster().size([360, this.getInnerRadius]);
-                var line = d3
-                    .radialLine()
-                    .curve(d3.curveBundle.beta(0.5))
-                    .radius(function(d) {
-                        return d.y;
-                    })
-                    .angle(function(d) {
-                        return (d.x / 180) * Math.PI;
-                    });
-
-                var svg = d3
-                    .select("svg")
-                    .append("g")
-                    .attr("transform", "translate(400, 325)");
-                // var svg = d3.select("#chart");
-                var link = svg.append("g").selectAll(".link");
-                var node = svg.append("g").selectAll(".node");
-                var root = this.packageHierarchy(data);
-                cluster(root);
-                console.log(line);
-                link = link
-                    .data(this.packageImports(root.leaves()))
-                    .enter()
-                    .append("path")
-                    .each(function(d) {
-                        (d.source = d[0]), (d.target = d[d.length - 1]);
-                    })
-                    .attr("class", "link")
-                    .attr("d", line)
-                    .on("click", function() {
-                        console.log(d3.select(this).data());
-                    });
-
-                node = node.data(root.leaves()).enter();
-
-                node.append("text")
-                    .attr("class", "node")
-                    .attr("dy", "0.28em")
-                    .attr("transform", function(d) {
-                        return (
+            drawNodes() {
+                var root = this.packageHierarchy(this.data);
+                if (root != undefined) {
+                    this.cluster(root);
+                    return root.leaves().map((d, i) => {
+                        let textAnchor = d.x < 180 ? "start" : "end";
+                        let transform =
                             "rotate(" +
                             (d.x - 90) +
                             ")translate(" +
                             (d.y + 8) +
                             ",0)" +
-                            (d.x < 180 ? "" : "rotate(180)")
-                        );
-                    })
-                    .attr("text-anchor", function(d) {
-                        return d.x < 180 ? "start" : "end";
-                    })
-                    .text(function(d) {
-                        return d.data.key.split("@")[0];
-                    })
-                    .on("mouseover", mouseovered)
-                    .on("mouseout", mouseouted);
-
-                function mouseovered(d) {
-                    console.log(d3.select(this).data());
-                    node.each(function(n) {
-                        n.target = n.source = false;
+                            (d.x < 180 ? "" : "rotate(180)");
+                        return {
+                            id: i + 1,
+                            dy: "0.28em",
+                            text: d.data.key.split("@")[0],
+                            textAnchor: textAnchor,
+                            transform: transform
+                        };
                     });
-
-                    link.classed("link--target", function(l) {
-                        if (l.target === d) return (l.source.source = true);
-                    })
-                        .classed("link--source", function(l) {
-                            if (l.source === d) return (l.target.target = true);
-                        })
-                        .filter(function(l) {
-                            return l.target === d || l.source === d;
-                        })
-                        .each(function() {
-                            this.parentNode.appendChild(this);
-                        });
-
-                    // node.classed("node--target", function(n) {
-                    //     return n.target;
-                    // }).classed("node--source", function(n) {
-                    //     return n.source;
-                    // });
                 }
-
-                function mouseouted() {
-                    link.classed("link--target", false).classed(
-                        "link--source",
-                        false
-                    );
-
-                    // node.classed("node--target", false).classed(
-                    //     "node--source",
-                    //     false
-                    // );
+            },
+            drawLinks() {
+                var root = this.packageHierarchy(this.data);
+                if (root != undefined) {
+                    return this.packageImports(root.leaves()).map((d, i) => {
+                        return {
+                            id: i + 1
+                        };
+                    });
                 }
             },
             packageHierarchy(data) {
-                var map = {};
-                // console.log(data);
+                data = JSON.parse(JSON.stringify(data));
+                let map = {};
                 function find(name, data) {
                     var node = map[name],
                         i;
@@ -214,8 +171,9 @@
                 data.forEach(function(d) {
                     find(d.name, d);
                 });
-
-                return d3.hierarchy(map[""]);
+                if (map[""] != undefined) {
+                    return d3.hierarchy(map[""]);
+                }
             },
             packageImports(nodes) {
                 var map = {},
@@ -232,17 +190,41 @@
                             imports.push(map[d.data.name].path(map[i]));
                         });
                 });
+
                 return imports;
+            },
+            getLines() {
+                const path = d3
+                    .radialLine()
+                    .curve(d3.curveBundle.beta(0.5))
+                    .radius(function(d) {
+                        return d.y;
+                    })
+                    .angle(function(d) {
+                        return (d.x / 180) * Math.PI;
+                    });
+                return path;
             }
         },
+
         computed: {
-            // style() {
-            //     return `translate(${this.getRadius},${this.getRadius})`;
-            // },
+            cluster() {
+                return d3.cluster().size([360, this.getInnerRadius]);
+            },
+            getNodes() {
+                return this.drawNodes();
+            },
+            getLinks() {
+                return this.drawLinks();
+            },
+            style() {
+                return `translate(400,325)`;
+            },
             getRadius() {
                 // 480
                 return this.diameter / 2;
             },
+
             getInnerRadius() {
                 // 360
                 return this.getRadius - 150;
@@ -260,9 +242,9 @@
 </script>
 
 <style>
-svg {
-    /* background-color: lightskyblue; */
-}
+/* svg {
+    background-color: lightskyblue;
+} */
 
 .node {
     font: 300 9px "Helvetica Neue", Helvetica, Arial, sans-serif;
