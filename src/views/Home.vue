@@ -1,9 +1,9 @@
 <template>
     <v-container fluid>
         <h1 class="text-center display-2 my-2">Analyzing Email Data:</h1>
-        <!-- <EdgeMain /> -->
+        <EdgeMain />
         <hr />
-        <EdgeBundling />
+        <!-- <EdgeBundling /> -->
     </v-container>
 
     <!-- <v-container fluid> -->
@@ -19,8 +19,8 @@
 
     export default {
         components: {
-            EdgeBundling
-            // EdgeMain
+            // EdgeBundling
+            EdgeMain
         }
     };
 </script>

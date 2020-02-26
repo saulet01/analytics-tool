@@ -1,7 +1,7 @@
 <template>
     <v-row>
         <v-col lg="7" md="7" sm="12" cols="12">
-            <v-card>
+            <v-card elevation="3">
                 <div class="svg-container">
                     <div class id="edge">
                         <svg
@@ -13,9 +13,9 @@
                                 <g>
                                     <path
                                         class="link"
-                                        v-for="b in getLinks"
-                                        :key="b.id"
-                                        :d="getLines()"
+                                        v-for="(b,i) in getLinks"
+                                        :key="i"
+                                        :d="getLines(b)"
                                     />
                                 </g>
                                 <g>
@@ -26,6 +26,7 @@
                                         :dy="d.dy"
                                         :text-anchor="d.textAnchor"
                                         :transform="d.transform"
+                                        :style="{ fontSize: fontSize + 'px' }"
                                     >{{ d.text }}</text>
                                 </g>
                             </g>
@@ -35,18 +36,60 @@
             </v-card>
         </v-col>
         <v-col lg="5" md="5" sm="12" cols="12">
-            <v-card class="mx-auto">
-                <v-card-title class="headline">Interaction</v-card-title>
-                <v-card-text>
-                    <v-subheader class="pl-0">Diameter:</v-subheader>
-                    <v-slider
-                        v-model="updateDiameter"
-                        max="1000"
-                        min="100"
-                        :size="diameter"
-                        thumb-label
-                    ></v-slider>
-                </v-card-text>
+            <v-expansion-panels>
+                <v-expansion-panel>
+                    <v-expansion-panel-header class="headline">Chart Settings</v-expansion-panel-header>
+                    <v-expansion-panel-content>
+                        <div class="d-flex">
+                            <v-subheader class="pl-0" style="width:7em;">Diameter:</v-subheader>
+                            <v-slider
+                                v-model="updateDiameter"
+                                class="mt-2"
+                                max="900"
+                                min="600"
+                                :size="diameter"
+                                thumb-label
+                            ></v-slider>
+                        </div>
+                        <div class="d-flex mt-n4">
+                            <v-subheader class="pl-0" style="width:7em;">Tension:</v-subheader>
+                            <v-slider
+                                v-model="getTension"
+                                max="10"
+                                min="1"
+                                :size="diameter"
+                                thumb-label
+                                class="mt-2"
+                            ></v-slider>
+                        </div>
+                        <div class="d-flex mt-n4">
+                            <v-subheader class="pl-0" style="width:7em;">Text Offset:</v-subheader>
+                            <v-slider
+                                v-model="textOffset"
+                                max="15"
+                                min="4"
+                                :size="diameter"
+                                thumb-label
+                                class="mt-2"
+                            ></v-slider>
+                        </div>
+                        <div class="d-flex mt-n4">
+                            <v-subheader class="pl-0" style="width:7em;">Text Size:</v-subheader>
+                            <v-slider
+                                v-model="fontSize"
+                                max="12"
+                                min="8"
+                                :size="diameter"
+                                thumb-label
+                                class="mt-2"
+                            ></v-slider>
+                        </div>
+                    </v-expansion-panel-content>
+                </v-expansion-panel>
+            </v-expansion-panels>
+            <v-card class="mx-auto mt-6" elevation="2">
+                <v-card-title class="headline">Selection:</v-card-title>
+                <v-card-text></v-card-text>
             </v-card>
         </v-col>
     </v-row>
@@ -64,7 +107,12 @@
                 data: [],
                 diameter: 750,
                 records: "",
-                rootLeaves: ""
+                tension: 8,
+                maxTension: 1,
+                minTension: 0.1,
+                fontSize: 9,
+                textOffset: 8,
+                rootLeaves: []
             };
         },
         mounted() {
@@ -124,7 +172,7 @@
                             "rotate(" +
                             (d.x - 90) +
                             ")translate(" +
-                            (d.y + 8) +
+                            (d.y + this.textOffset) +
                             ",0)" +
                             (d.x < 180 ? "" : "rotate(180)");
                         return {
@@ -140,10 +188,10 @@
             drawLinks() {
                 var root = this.packageHierarchy(this.data);
                 if (root != undefined) {
+                    this.cluster(root);
+                    this.rootLeaves = this.packageImports(root.leaves());
                     return this.packageImports(root.leaves()).map((d, i) => {
-                        return {
-                            id: i + 1
-                        };
+                        return d;
                     });
                 }
             },
@@ -192,24 +240,39 @@
                 });
 
                 return imports;
-            },
+            }
+        },
+        computed: {
             getLines() {
-                const path = d3
+                return d3
                     .radialLine()
-                    .curve(d3.curveBundle.beta(0.5))
+                    .curve(d3.curveBundle.beta(this.tension / 10))
                     .radius(function(d) {
                         return d.y;
                     })
                     .angle(function(d) {
                         return (d.x / 180) * Math.PI;
                     });
-                return path;
-            }
-        },
-
-        computed: {
+            },
+            d() {
+                return this.getLines(this.rootLeaves);
+            },
             cluster() {
                 return d3.cluster().size([360, this.getInnerRadius]);
+            },
+            getTension: {
+                get() {
+                    return this.tension;
+                },
+                set(newValue) {
+                    this.tension = newValue;
+                }
+            },
+            getMaxTension() {
+                return this.maxTension * 10;
+            },
+            getMinTension() {
+                return this.minTension * 10;
             },
             getNodes() {
                 return this.drawNodes();
@@ -221,10 +284,8 @@
                 return `translate(400,325)`;
             },
             getRadius() {
-                // 480
                 return this.diameter / 2;
             },
-
             getInnerRadius() {
                 // 360
                 return this.getRadius - 150;
@@ -247,8 +308,12 @@
 } */
 
 .node {
-    font: 300 9px "Helvetica Neue", Helvetica, Arial, sans-serif;
+    /* font: 300 9px "Helvetica Neue", Helvetica, Arial, sans-serif; */
+    /* font-size: 8px; */
     fill: #000;
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 .node:hover {
     fill: #000;
