@@ -88,10 +88,7 @@
                         </v-expansion-panel-content>
                     </v-expansion-panel>
                 </v-expansion-panels>
-                <v-card class="mx-auto mt-6" elevation="2">
-                    <v-card-title class="headline">Selection:</v-card-title>
-                    <v-card-text></v-card-text>
-                </v-card>
+                <SelectionComponent />
             </v-col>
         </v-row>
 
@@ -102,13 +99,15 @@
 <script>
     import * as d3 from "d3";
     import EdgeTable from "./EdgeTable";
+    import SelectionComponent from "./SelectionComponent";
     // const d3 = {
     //     ...require("d3-scale"),
     //     ...require("d3-shape")
     // };
     export default {
         components: {
-            EdgeTable
+            EdgeTable,
+            SelectionComponent
         },
         data() {
             return {
