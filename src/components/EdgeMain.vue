@@ -1,107 +1,115 @@
 <template>
-    <v-row>
-        <v-col lg="7" md="7" sm="12" cols="12">
-            <v-card elevation="3">
-                <div class="svg-container">
-                    <div class id="edge">
-                        <svg
-                            preserveAspectRatio="xMidYMid meet"
-                            viewBox="0 0 800 650"
-                            class="svg-content-responsive"
-                        >
-                            <g :transform="style">
-                                <g>
-                                    <path
-                                        class="link"
-                                        v-for="(b,i) in getLinks"
-                                        :key="i"
-                                        :d="getLines(b)"
-                                    />
+    <div>
+        <v-row>
+            <v-col lg="7" md="7" sm="12" cols="12">
+                <v-card elevation="3">
+                    <div class="svg-container">
+                        <div class id="edge">
+                            <svg
+                                preserveAspectRatio="xMidYMid meet"
+                                viewBox="0 0 800 650"
+                                class="svg-content-responsive"
+                            >
+                                <g :transform="style">
+                                    <g>
+                                        <path
+                                            class="link"
+                                            v-for="(b,i) in getLinks"
+                                            :key="i"
+                                            :d="getLines(b)"
+                                        />
+                                    </g>
+                                    <g>
+                                        <text
+                                            class="node"
+                                            v-for="d in getNodes"
+                                            :key="d.id"
+                                            :dy="d.dy"
+                                            :text-anchor="d.textAnchor"
+                                            :transform="d.transform"
+                                            :style="{ fontSize: fontSize + 'px' }"
+                                        >{{ d.text }}</text>
+                                    </g>
                                 </g>
-                                <g>
-                                    <text
-                                        class="node"
-                                        v-for="d in getNodes"
-                                        :key="d.id"
-                                        :dy="d.dy"
-                                        :text-anchor="d.textAnchor"
-                                        :transform="d.transform"
-                                        :style="{ fontSize: fontSize + 'px' }"
-                                    >{{ d.text }}</text>
-                                </g>
-                            </g>
-                        </svg>
+                            </svg>
+                        </div>
                     </div>
-                </div>
-            </v-card>
-        </v-col>
-        <v-col lg="5" md="5" sm="12" cols="12">
-            <v-expansion-panels>
-                <v-expansion-panel>
-                    <v-expansion-panel-header class="headline">Chart Settings</v-expansion-panel-header>
-                    <v-expansion-panel-content>
-                        <div class="d-flex">
-                            <v-subheader class="pl-0" style="width:7em;">Diameter:</v-subheader>
-                            <v-slider
-                                v-model="updateDiameter"
-                                class="mt-2"
-                                max="900"
-                                min="600"
-                                :size="diameter"
-                                thumb-label
-                            ></v-slider>
-                        </div>
-                        <div class="d-flex mt-n4">
-                            <v-subheader class="pl-0" style="width:7em;">Tension:</v-subheader>
-                            <v-slider
-                                v-model="getTension"
-                                max="10"
-                                min="1"
-                                :size="diameter"
-                                thumb-label
-                                class="mt-2"
-                            ></v-slider>
-                        </div>
-                        <div class="d-flex mt-n4">
-                            <v-subheader class="pl-0" style="width:7em;">Text Offset:</v-subheader>
-                            <v-slider
-                                v-model="textOffset"
-                                max="15"
-                                min="4"
-                                :size="diameter"
-                                thumb-label
-                                class="mt-2"
-                            ></v-slider>
-                        </div>
-                        <div class="d-flex mt-n4">
-                            <v-subheader class="pl-0" style="width:7em;">Text Size:</v-subheader>
-                            <v-slider
-                                v-model="fontSize"
-                                max="12"
-                                min="8"
-                                :size="diameter"
-                                thumb-label
-                                class="mt-2"
-                            ></v-slider>
-                        </div>
-                    </v-expansion-panel-content>
-                </v-expansion-panel>
-            </v-expansion-panels>
-            <v-card class="mx-auto mt-6" elevation="2">
-                <v-card-title class="headline">Selection:</v-card-title>
-                <v-card-text></v-card-text>
-            </v-card>
-        </v-col>
-    </v-row>
+                </v-card>
+            </v-col>
+            <v-col lg="5" md="5" sm="12" cols="12">
+                <v-expansion-panels>
+                    <v-expansion-panel>
+                        <v-expansion-panel-header class="headline">Chart Settings</v-expansion-panel-header>
+                        <v-expansion-panel-content>
+                            <div class="d-flex">
+                                <v-subheader class="pl-0" style="width:7em;">Diameter:</v-subheader>
+                                <v-slider
+                                    v-model="updateDiameter"
+                                    class="mt-2"
+                                    max="900"
+                                    min="600"
+                                    :size="diameter"
+                                    thumb-label
+                                ></v-slider>
+                            </div>
+                            <div class="d-flex mt-n4">
+                                <v-subheader class="pl-0" style="width:7em;">Tension:</v-subheader>
+                                <v-slider
+                                    v-model="getTension"
+                                    max="10"
+                                    min="1"
+                                    :size="diameter"
+                                    thumb-label
+                                    class="mt-2"
+                                ></v-slider>
+                            </div>
+                            <div class="d-flex mt-n4">
+                                <v-subheader class="pl-0" style="width:7em;">Text Offset:</v-subheader>
+                                <v-slider
+                                    v-model="textOffset"
+                                    max="15"
+                                    min="4"
+                                    :size="diameter"
+                                    thumb-label
+                                    class="mt-2"
+                                ></v-slider>
+                            </div>
+                            <div class="d-flex mt-n4">
+                                <v-subheader class="pl-0" style="width:7em;">Text Size:</v-subheader>
+                                <v-slider
+                                    v-model="fontSize"
+                                    max="12"
+                                    min="8"
+                                    :size="diameter"
+                                    thumb-label
+                                    class="mt-2"
+                                ></v-slider>
+                            </div>
+                        </v-expansion-panel-content>
+                    </v-expansion-panel>
+                </v-expansion-panels>
+                <v-card class="mx-auto mt-6" elevation="2">
+                    <v-card-title class="headline">Selection:</v-card-title>
+                    <v-card-text></v-card-text>
+                </v-card>
+            </v-col>
+        </v-row>
+
+        <EdgeTable v-bind:originaldata="original" />
+    </div>
 </template>
 
 <script>
     import * as d3 from "d3";
+    import EdgeTable from "./EdgeTable";
     // const d3 = {
     //     ...require("d3-scale"),
     //     ...require("d3-shape")
     // };
     export default {
+        components: {
+            EdgeTable
+        },
         data() {
             return {
                 data: [],
@@ -112,7 +120,8 @@
                 minTension: 0.1,
                 fontSize: 9,
                 textOffset: 8,
-                rootLeaves: []
+                rootLeaves: [],
+                original: []
             };
         },
         mounted() {
@@ -123,6 +132,7 @@
             async fetchData() {
                 let data = await d3.csv("./email_headers.csv");
                 let records = await d3.csv("./EmployeeRecords.csv");
+                this.original = data;
                 records = records.map(d => {
                     return {
                         email: d.EmailAddress,
