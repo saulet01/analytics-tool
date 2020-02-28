@@ -22,8 +22,10 @@
             <v-col lg="5" md="5" sm="12" cols="12">
                 <v-expansion-panels>
                     <v-expansion-panel>
-                        <v-icon>fa-cog</v-icon>
+                        <!-- <div class="d-flex"> -->
+                        <!-- <v-icon class="ml-2 mr-n3" color="primary">fa-cog</v-icon> -->
                         <v-expansion-panel-header class="headline">Settings</v-expansion-panel-header>
+                        <!-- </div> -->
                         <v-expansion-panel-content>
                             <div class="d-flex">
                                 <v-subheader class="pl-0" style="width:7em;">Diameter:</v-subheader>

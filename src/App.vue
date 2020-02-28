@@ -2,6 +2,7 @@
     <v-app>
         <v-app-bar app color="primary" dark>
             <div class="d-flex align-self-center align-center">
+                <!-- <v-toolbar-title>Collapsing Bar</v-toolbar-title> -->
                 <p class="headline mt-4">VAST Challenge 2014</p>
                 <!-- <v-img
                     alt="Vuetify Logo"
@@ -32,15 +33,14 @@
 </template>
 
 <script>
-    export default {
-        name: "App",
+export default {
+    name: "App",
 
-        components: {},
+    components: {},
 
-        data: () => ({
-            //
-        })
-    };
+    data: () => ({
+        collapseOnScroll: true
+    })
+};
 </script>
-<style scoped>
-</style>
+<style scoped></style>
