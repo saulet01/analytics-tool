@@ -1,9 +1,8 @@
 <template>
     <v-container fluid>
         <h1 class="text-center display-2 my-2">Analyzing Email Data:</h1>
-        <EdgeMain />
-        <hr />
-        <!-- <EdgeBundling /> -->
+        <EdgeCircle />
+        <!-- <EdgeMain /> -->
     </v-container>
 
     <!-- <v-container fluid> -->
@@ -14,13 +13,13 @@
 <script>
     // @ is an alias to /src
     // import HelloWorld from '@/components/HelloWorld.vue'
-    import EdgeBundling from "../components/EdgeBundling";
     import EdgeMain from "../components/EdgeMain";
+    import EdgeCircle from "../components/EdgeCircle";
 
     export default {
         components: {
-            // EdgeBundling
-            EdgeMain
+            EdgeCircle
+            // EdgeMain
         }
     };
 </script>

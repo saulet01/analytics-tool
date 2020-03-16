@@ -33,14 +33,14 @@
 </template>
 
 <script>
-export default {
-    name: "App",
+    export default {
+        name: "App",
 
-    components: {},
+        components: {},
 
-    data: () => ({
-        collapseOnScroll: true
-    })
-};
+        data: () => ({
+            collapseOnScroll: true
+        })
+    };
 </script>
 <style scoped></style>
