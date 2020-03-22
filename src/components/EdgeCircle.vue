@@ -1,10 +1,57 @@
 <template>
     <div>
         <v-row>
-            <v-col cols="12">
-                <v-card>
-                    <v-card-title>Whatsapp</v-card-title>
-                </v-card>
+            <v-col cols="6" sm="6" md="4">
+                <v-menu
+                    v-model="menu2"
+                    :close-on-content-click="false"
+                    :nudge-right="40"
+                    transition="scale-transition"
+                    offset-y
+                    min-width="290px"
+                >
+                    <template v-slot:activator="{ on }">
+                        <v-text-field
+                            v-model="datePicker.dateStart"
+                            label="Picker without buttons"
+                            prepend-icon="far fa-calendar-alt"
+                            readonly
+                            v-on="on"
+                        ></v-text-field>
+                    </template>
+                    <v-date-picker
+                        v-model="datePicker.dateStart"
+                        :min="datePicker.limitMin"
+                        :max="datePicker.limitMax"
+                        @input="menu2 = false"
+                    ></v-date-picker>
+                </v-menu>
+            </v-col>
+            <v-col cols="6" sm="6" md="4">
+                <v-menu
+                    v-model="menu3"
+                    :close-on-content-click="false"
+                    :nudge-right="40"
+                    transition="scale-transition"
+                    offset-y
+                    min-width="290px"
+                >
+                    <template v-slot:activator="{ on }">
+                        <v-text-field
+                            v-model="datePicker.dateFinish"
+                            label="Picker without buttons"
+                            prepend-icon="far fa-calendar-alt"
+                            readonly
+                            v-on="on"
+                        ></v-text-field>
+                    </template>
+                    <v-date-picker
+                        v-model="datePicker.dateFinish"
+                        :min="datePicker.limitMin"
+                        :max="datePicker.limitMax"
+                        @input="menu3 = false"
+                    ></v-date-picker>
+                </v-menu>
             </v-col>
         </v-row>
         <v-row>
@@ -35,7 +82,7 @@
                                             :dy="d.dy"
                                             :text-anchor="d.textAnchor"
                                             :transform="d.transform"
-                                            :style="{ fontSize: fontSize + 'px' }"
+                                            :style="{ fontSize: chartStyling.fontSize + 'px' }"
                                             :data="d.data"
                                             :class="objectNode()"
                                             @mouseover="mouseOver(d)"
@@ -64,7 +111,7 @@
                                     class="mt-2"
                                     max="900"
                                     min="600"
-                                    :size="diameter"
+                                    :size="chartStyling.diameter"
                                     thumb-label
                                 ></v-slider>
                             </div>
@@ -74,7 +121,7 @@
                                     v-model="getTension"
                                     max="10"
                                     min="1"
-                                    :size="diameter"
+                                    :size="chartStyling.diameter"
                                     thumb-label
                                     class="mt-2"
                                 ></v-slider>
@@ -82,10 +129,10 @@
                             <div class="d-flex mt-n4">
                                 <v-subheader class="pl-0" style="width:7em;">Text Offset:</v-subheader>
                                 <v-slider
-                                    v-model="textOffset"
+                                    v-model="chartStyling.textOffset"
                                     max="15"
                                     min="4"
-                                    :size="diameter"
+                                    :size="chartStyling.diameter"
                                     thumb-label
                                     class="mt-2"
                                 ></v-slider>
@@ -93,10 +140,10 @@
                             <div class="d-flex mt-n4">
                                 <v-subheader class="pl-0" style="width:7em;">Text Size:</v-subheader>
                                 <v-slider
-                                    v-model="fontSize"
+                                    v-model="chartStyling.fontSize"
                                     max="12"
                                     min="8"
-                                    :size="diameter"
+                                    :size="chartStyling.diameter"
                                     thumb-label
                                     class="mt-2"
                                 ></v-slider>
@@ -117,6 +164,9 @@
     import * as d3 from "d3";
     import EdgeTable from "./EdgeTable";
     import SelectionComponent from "./SelectionComponent";
+    import Moment from "moment";
+    import { extendMoment } from "moment-range";
+    const moment = extendMoment(Moment);
     // const d3 = {
     //     ...require("d3-scale"),
     //     ...require("d3-shape")
@@ -128,25 +178,54 @@
         },
         data() {
             return {
+                datePicker: {
+                    dateStart: "",
+                    dateFinish: "",
+                    limitMin: "",
+                    limitMax: ""
+                },
+                menu2: false,
+                menu3: false,
                 data: [],
-                diameter: 750,
+                chartStyling: {
+                    diameter: 750,
+                    tension: 9,
+                    maxTension: 1,
+                    minTension: 0.1,
+                    fontSize: 9,
+                    textOffset: 8
+                },
                 records: "",
-                tension: 9,
-                maxTension: 1,
-                minTension: 0.1,
-                fontSize: 9,
-                textOffset: 8,
                 original: [],
-                test: [],
+                links: [],
                 nodes: [],
-                selectedData: []
+                selectedData: [],
+                formatedData: [],
+                clusterData: []
             };
         },
         mounted() {
             this.fetchData();
+            // this.draw();
             // this.drawNodes();
         },
+        watch: {
+            datePicker() {
+                // let dateStart = moment(this.dateStart, "YYYY-MM-DD");
+                // let dateFinish = moment(this.dateFinish, "YYYY-MM-DD");
+                // let findRange = moment.range(dateStart, dateFinish);
+                // this.original = this.original.filter(d =>
+                //     findRange.contains(d.Date)
+                // );
+                // var filteredDataTime = gpsData.filter(d => d.id == selectedPerson && filteredRange.contains(moment(d.Timestamp)));
+                // console.log(this.original.map(d => d));
+                // this.draw(findRange);
+            },
 
+            formatedData() {
+                // console.log(this.formatedData);
+            }
+        },
         methods: {
             selectedItem(item) {
                 Array.prototype.push.apply(item.data.outgoing, item.data.incoming);
@@ -162,13 +241,44 @@
             async fetchData() {
                 // let data = await d3.json("./dumb.json");
 
-                let temporal_data = await d3.csv("./email_100.csv");
-                this.original = temporal_data;
-                let cluster_data = await d3.csv("./EmployeeRecords.csv");
-                let gettingFromat = this.formatData(temporal_data, cluster_data);
+                this.original = await d3.csv("./email_100.csv");
+                let stringOFDates = this.original.map(d => {
+                    return moment(d.Date, "MM/DD/YYYY");
+                });
+                let justMinDate = moment.min(stringOFDates);
+                this.datePicker.limitMin = justMinDate.format("YYYY-MM-DD");
+                this.datePicker.dateStart = justMinDate.format("YYYY-MM-DD");
+                this.datePicker.dateFinish = justMinDate
+                    .add(1, "d")
+                    .format("YYYY-MM-DD");
 
-                this.data = this.wrangleData(gettingFromat);
-                this.test = this.drawLinks();
+                this.datePicker.limitMax = moment
+                    .max(stringOFDates)
+                    .format("YYYY-MM-DD");
+
+                /* Moment Range  */
+                // let starDate = moment("01/01/2020", "MM/DD/YYYY");
+                // let finishDate = moment("01/03/2020", "MM/DD/YYYY");
+                // let testDate = moment("01/05/2020", "MM/DD/YYYY");
+                // let findRange = moment.range(starDate, finishDate);
+                // console.log(findRange.contains(testDate));
+
+                this.clusterData = await d3.csv("./EmployeeRecords.csv");
+                // let gettingFromat = this.formatData(temporal_data, cluster_data);
+
+                // console.log(this.formatedData);
+                this.draw();
+                // this.data = this.wrangleData(this.formatedData);
+                // this.links = this.drawLinks();
+                // this.nodes = this.drawNodes();
+            },
+            draw() {
+                this.formatedData = this.formatData(
+                    this.original,
+                    this.clusterData
+                );
+                this.data = this.wrangleData(this.formatedData);
+                this.links = this.drawLinks();
                 this.nodes = this.drawNodes();
             },
             mouseOver(thisNode, lines) {
@@ -176,7 +286,7 @@
                     d.target = d.source = false;
                 });
 
-                this.test.map(d => {
+                this.links.map(d => {
                     if (d.source.data == thisNode.data.data) {
                         d.source.source = true;
                     }
@@ -185,20 +295,9 @@
                         d.target.target = true;
                     }
                 });
-
-                //                 this.nodes.map(d => {
-                //                     let findSource = this.test.find(
-                //                         element => element.source.data == thisNode.data.data
-                //                     );
-
-                //                     let findTarget = this.test.find(
-                //                         element => element.target.data == thisNode.data.data
-                //                     );
-                // =                });
-                // console.log(this.nodes);
             },
             mouseLeave(thisNode) {
-                this.test.map(d => {
+                this.links.map(d => {
                     if (d.source.data == thisNode.data.data) {
                         d.source.source = false;
                     }
@@ -314,12 +413,12 @@
                 var root = this.cluster(d3.hierarchy(this.data));
                 let getNodes = root.leaves().map((d, i) => {
                     let textAnchor = d.x < 180 ? "start" : "end";
-                    let text = d.data.id;
+                    let text = d.data.id.split("@")[0];
                     let transform =
                         "rotate(" +
                         (d.x - 90) +
                         ")translate(" +
-                        (d.y + this.textOffset) +
+                        (d.y + this.chartStyling.textOffset) +
                         ",0)" +
                         (d.x < 180 ? "" : "rotate(180)");
                     return {
@@ -361,7 +460,7 @@
             getLines() {
                 return d3
                     .radialLine()
-                    .curve(d3.curveBundle.beta(this.tension / 10))
+                    .curve(d3.curveBundle.beta(this.chartStyling.tension / 10))
                     .radius(function(d) {
                         return d.y;
                     })
@@ -374,31 +473,31 @@
             },
             getTension: {
                 get() {
-                    return this.tension;
+                    return this.chartStyling.tension;
                 },
                 set(newValue) {
-                    this.tension = newValue;
+                    this.chartStyling.tension = newValue;
                 }
             },
             getMaxTension() {
-                return this.maxTension * 10;
+                return this.chartStyling.maxTension * 10;
             },
             getMinTension() {
-                return this.minTension * 10;
+                return this.chartStyling.minTension * 10;
             },
             getNodes() {
                 return this.nodes;
                 // return this.drawNodes();
             },
             getLinks() {
-                return this.test;
+                return this.links;
                 // return this.drawLinks();
             },
             style() {
                 return `translate(400,325)`;
             },
             getRadius() {
-                return this.diameter / 2;
+                return this.chartStyling.diameter / 2;
             },
             getInnerRadius() {
                 // 360
@@ -406,10 +505,10 @@
             },
             updateDiameter: {
                 get() {
-                    return this.diameter;
+                    return this.chartStyling.diameter;
                 },
                 set(newValue) {
-                    this.diameter = newValue;
+                    this.chartStyling.diameter = newValue;
                 }
             }
         }

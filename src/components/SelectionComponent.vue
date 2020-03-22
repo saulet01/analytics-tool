@@ -29,7 +29,7 @@
                     <v-list-item
                         v-for="(email, index) in item.to"
                         :key="index"
-                        :class="index == 0 ? 'mt-n4' : 'mt-n6' "
+                        :class="index == 0 ? 'mt-n4' : 'mt-n6'"
                     >
                         <v-list-item-content>
                             <v-list-item-subtitle style="font-size: 0.8em;" class="pa-0">{{ email }}</v-list-item-subtitle>
@@ -38,18 +38,18 @@
                 </template>
                 <template v-slot:item.from="{ item }">
                     <div style="width: 8em;">
-                        <v-text style="font-size: 0.8em;">{{ item.from }}</v-text>
+                        <p style="font-size: 0.8em;">{{ item.from }}</p>
                     </div>
                 </template>
                 <template v-slot:item.date="{ item }">
-                    <v-text style="font-size: 0.8em;">{{ item.date }}</v-text>
+                    <p style="font-size: 0.8em;">{{ item.date }}</p>
                 </template>
                 <template v-slot:item.message="{ item }">
-                    <v-text style="font-size: 0.8em;">{{ item.message }}</v-text>
+                    <p style="font-size: 0.8em;">{{ item.message }}</p>
                 </template>
             </v-data-table>
         </v-card-text>
-        <v-dialog v-model="dialog" width="1200">
+        <v-dialog v-model="dialog" width="100%">
             <v-card>
                 <v-card-title>
                     Selection:
