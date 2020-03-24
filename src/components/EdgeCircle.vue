@@ -1,56 +1,37 @@
 <template>
     <div>
         <v-row>
-            <v-col cols="6" sm="6" md="4">
+            <v-col cols="3" sm="6" md="3">
                 <v-menu
-                    v-model="menu2"
-                    :close-on-content-click="false"
-                    :nudge-right="40"
-                    transition="scale-transition"
+                    v-model="menu"
+                    :nudge-right="30"
+                    transition="slide-y-transition"
                     offset-y
                     min-width="290px"
+                    ref="menu"
+                    :close-on-content-click="false"
                 >
                     <template v-slot:activator="{ on }">
                         <v-text-field
-                            v-model="datePicker.dateStart"
-                            label="Picker without buttons"
+                            v-model="getDates"
+                            label="Pick a date or range"
                             prepend-icon="far fa-calendar-alt"
                             readonly
                             v-on="on"
                         ></v-text-field>
                     </template>
+
                     <v-date-picker
-                        v-model="datePicker.dateStart"
+                        v-model="dates"
                         :min="datePicker.limitMin"
                         :max="datePicker.limitMax"
                         @input="menu2 = false"
-                    ></v-date-picker>
-                </v-menu>
-            </v-col>
-            <v-col cols="6" sm="6" md="4">
-                <v-menu
-                    v-model="menu3"
-                    :close-on-content-click="false"
-                    :nudge-right="40"
-                    transition="scale-transition"
-                    offset-y
-                    min-width="290px"
-                >
-                    <template v-slot:activator="{ on }">
-                        <v-text-field
-                            v-model="datePicker.dateFinish"
-                            label="Picker without buttons"
-                            prepend-icon="far fa-calendar-alt"
-                            readonly
-                            v-on="on"
-                        ></v-text-field>
-                    </template>
-                    <v-date-picker
-                        v-model="datePicker.dateFinish"
-                        :min="datePicker.limitMin"
-                        :max="datePicker.limitMax"
-                        @input="menu3 = false"
-                    ></v-date-picker>
+                        range
+                    >
+                        <v-spacer></v-spacer>
+                        <v-btn text color="primary" @click="menu = false">Cancel</v-btn>
+                        <v-btn text color="primary" @click="$refs.menu.save(dates)">OK</v-btn>
+                    </v-date-picker>
                 </v-menu>
             </v-col>
         </v-row>
@@ -178,14 +159,12 @@
         },
         data() {
             return {
+                dates: [],
                 datePicker: {
-                    dateStart: "",
-                    dateFinish: "",
                     limitMin: "",
                     limitMax: ""
                 },
-                menu2: false,
-                menu3: false,
+                menu: false,
                 data: [],
                 chartStyling: {
                     diameter: 750,
@@ -210,16 +189,23 @@
             // this.drawNodes();
         },
         watch: {
-            datePicker() {
-                // let dateStart = moment(this.dateStart, "YYYY-MM-DD");
-                // let dateFinish = moment(this.dateFinish, "YYYY-MM-DD");
-                // let findRange = moment.range(dateStart, dateFinish);
-                // this.original = this.original.filter(d =>
-                //     findRange.contains(d.Date)
-                // );
-                // var filteredDataTime = gpsData.filter(d => d.id == selectedPerson && filteredRange.contains(moment(d.Timestamp)));
-                // console.log(this.original.map(d => d));
-                // this.draw(findRange);
+            dates() {
+                if (this.dates.length == 1) {
+                    let rangeData = moment(this.dates[0], "YYYY-MM-DD");
+                    let findRange = moment.range(rangeData, rangeData);
+                    let newData = this.original.filter(d =>
+                        findRange.contains(moment(d.Date, "MM-DD-YYYY"))
+                    );
+                    this.draw(newData);
+                } else {
+                    let rangeStart = moment(this.dates[0], "YYYY-MM-DD");
+                    let rangeFinish = moment(this.dates[1], "YYYY-MM-DD");
+                    let getRange = moment.range(rangeStart, rangeFinish);
+                    let newRangedData = this.original.filter(d =>
+                        getRange.contains(moment(d.Date, "MM/DD/YYYY"))
+                    );
+                    this.draw(newRangedData);
+                }
             },
 
             formatedData() {
@@ -242,45 +228,48 @@
                 // let data = await d3.json("./dumb.json");
 
                 this.original = await d3.csv("./email_100.csv");
+                this.clusterData = await d3.csv("./EmployeeRecords.csv");
+
                 let stringOFDates = this.original.map(d => {
                     return moment(d.Date, "MM/DD/YYYY");
                 });
                 let justMinDate = moment.min(stringOFDates);
                 this.datePicker.limitMin = justMinDate.format("YYYY-MM-DD");
-                this.datePicker.dateStart = justMinDate.format("YYYY-MM-DD");
-                this.datePicker.dateFinish = justMinDate
-                    .add(1, "d")
-                    .format("YYYY-MM-DD");
+
+                let startingDate = justMinDate.format("YYYY-MM-DD");
+                let nextDate = justMinDate.add(1, "d").format("YYYY-MM-DD");
+
+                let findRangeBeginning = moment.range(startingDate, nextDate);
+                let newData = this.original.filter(d =>
+                    findRangeBeginning.contains(moment(d.Date, "MM/DD/YYYY"))
+                );
+
+                this.dates = [startingDate, nextDate];
 
                 this.datePicker.limitMax = moment
                     .max(stringOFDates)
                     .format("YYYY-MM-DD");
 
-                /* Moment Range  */
-                // let starDate = moment("01/01/2020", "MM/DD/YYYY");
-                // let finishDate = moment("01/03/2020", "MM/DD/YYYY");
-                // let testDate = moment("01/05/2020", "MM/DD/YYYY");
-                // let findRange = moment.range(starDate, finishDate);
-                // console.log(findRange.contains(testDate));
-
-                this.clusterData = await d3.csv("./EmployeeRecords.csv");
-                // let gettingFromat = this.formatData(temporal_data, cluster_data);
-
-                // console.log(this.formatedData);
-                this.draw();
+                this.draw(newData);
                 // this.data = this.wrangleData(this.formatedData);
                 // this.links = this.drawLinks();
                 // this.nodes = this.drawNodes();
             },
-            draw() {
-                this.formatedData = this.formatData(
-                    this.original,
-                    this.clusterData
-                );
+            draw(data) {
+                if (data) {
+                    this.formatedData = this.formatData(data, this.clusterData);
+                } else {
+                    this.formatedData = this.formatData(
+                        this.original,
+                        this.clusterData
+                    );
+                }
+
                 this.data = this.wrangleData(this.formatedData);
                 this.links = this.drawLinks();
                 this.nodes = this.drawNodes();
             },
+
             mouseOver(thisNode, lines) {
                 this.nodes.map(d => {
                     d.target = d.source = false;
@@ -457,6 +446,9 @@
             }
         },
         computed: {
+            getDates() {
+                return this.dates.join(" - ");
+            },
             getLines() {
                 return d3
                     .radialLine()
