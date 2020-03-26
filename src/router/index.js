@@ -1,13 +1,19 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
+import Novelty from '../components/Timeline/Novelty.vue'
 
 Vue.use(VueRouter)
 
 const routes = [{
         path: '/',
-        name: 'home',
-        component: Home
+        name: 'Novelty',
+        component: Novelty
+    },
+    {
+        path: '/email',
+        name: 'Email',
+        component: () => import( /* webpackChunkName: "about" */ '../components/EdgeCircle.vue')
     },
     {
         path: '/about',

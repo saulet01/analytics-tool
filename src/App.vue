@@ -1,29 +1,14 @@
 <template>
     <v-app>
         <v-app-bar app color="primary" dark>
-            <div class="d-flex align-self-center align-center">
-                <!-- <v-toolbar-title>Collapsing Bar</v-toolbar-title> -->
-                <p class="headline mt-4">VAST Challenge 2014</p>
-                <!-- <v-img
-                    alt="Vuetify Logo"
-                    class="shrink mr-2"
-                    contain
-                    src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-                    transition="scale-transition"
-                    width="40"
-                />
-
-                <v-img
-                    alt="Vuetify Name"
-                    class="shrink mt-1 hidden-sm-and-down"
-                    contain
-                    min-width="100"
-                    src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-                    width="100"
-                />-->
-            </div>
-
-            <!-- <v-spacer></v-spacer> -->
+            <v-row align="center">
+                <v-col cols="9">
+                    <p class="headline mt-4">VAST Challenge 2014</p>
+                </v-col>
+                <v-col cols="3">
+                    <v-btn small text v-for="(item, index) in menuItems" :key="'L' + index" router :to="item.link" exact active-class="button-link-active">{{ item.title }}</v-btn>
+                </v-col>
+            </v-row>
         </v-app-bar>
 
         <v-content>
@@ -33,14 +18,36 @@
 </template>
 
 <script>
-    export default {
-        name: "App",
+export default {
+    name: "App",
 
-        components: {},
+    components: {},
 
-        data: () => ({
-            collapseOnScroll: true
-        })
-    };
+    data: () => ({
+        collapseOnScroll: true,
+        menuItems: [
+            {
+                title: "Timeline Novelty",
+                link: "/",
+                icon: "car"
+            },
+            {
+                title: "Email",
+                link: "/email",
+                icon: "wind"
+            }
+        ]
+    })
+};
 </script>
-<style scoped></style>
+<style scoped>
+.button-link-active {
+    background-color: #c6382c !important;
+}
+.button-link-active::before {
+    background-color: #c6382c !important;
+}
+/* #app {
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+} */
+</style>
