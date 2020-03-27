@@ -13,10 +13,7 @@
                     <v-card-title> </v-card-title>
                     <v-card-text> </v-card-text>
                 </v-card>
-                <v-card class="mt-4" elevation="4" height="260">
-                    <v-card-title> </v-card-title>
-                    <v-card-text> </v-card-text>
-                </v-card>
+                <WordCloud />
             </v-col>
         </v-row>
         <v-row>
@@ -29,9 +26,13 @@
 
 <script>
 import eventDrops from "event-drops";
+import WordCloud from "./WordCloud";
 import * as d3 from "d3";
 
 export default {
+    components: {
+        WordCloud
+    },
     data() {
         return {
             data: [
