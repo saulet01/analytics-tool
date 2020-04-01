@@ -1,18 +1,15 @@
 <template>
     <v-container fluid>
-        <v-row>
-            <v-col cols="6">
-                <v-card height="400" elevation="4">
+        <v-row justify="center">
+            <v-col cols="12" lg="6" md="10">
+                <v-card height="430" elevation="4">
                     <v-card-title>{{ pickedData.title }}</v-card-title>
                     <v-card-subtitle>{{ pickedData.date }}</v-card-subtitle>
                     <v-card-text>{{ pickedData.description }}</v-card-text>
                 </v-card>
             </v-col>
-            <v-col cols="6">
-                <v-card elevation="4" height="120">
-                    <v-card-title> </v-card-title>
-                    <v-card-text> </v-card-text>
-                </v-card>
+            <v-col cols="12" lg="6" md="10">
+                <Sentiment :value="value" />
                 <WordCloud />
             </v-col>
         </v-row>
@@ -25,76 +22,111 @@
 </template>
 
 <script>
-import eventDrops from "event-drops";
-import WordCloud from "./WordCloud";
-import * as d3 from "d3";
+    import eventDrops from "event-drops";
+    import WordCloud from "./WordCloud";
+    import Sentiment from "./Sentiment";
+    import * as d3 from "d3";
 
-export default {
-    components: {
-        WordCloud
-    },
-    data() {
-        return {
-            data: [
-                {
-                    name: "admin-on-rest",
-                    data: [
-                        {
-                            date: new Date("2020/03/03 14:21:31"),
-                            title: "This is title",
-                            description: "This is a description"
-                        },
-                        {
-                            date: new Date("2020/03/03 15:21:31"),
-                            title: "This is title a new title",
-                            description: "This is a description"
-                        }
-                    ]
-                },
-                {
-                    name: "whatsapp",
-                    data: []
-                }
-            ],
-            radius: 10,
-            pickedData: {},
-            startDate: "",
-            endDate: ""
-        };
-    },
-    mounted() {
-        d3.select("#event-chart")
-            .data([this.data])
-            .call(this.getChart);
-    },
-    methods: {
-        updateText(event) {
-            this.pickedData = event;
-        }
-    },
-    computed: {
-        getChart() {
-            return eventDrops({
-                d3,
-                line: {
-                    height: 50
-                },
-                drop: {
-                    radius: this.radius,
-                    date: d => d.date,
-                    onClick: d => {
-                        this.updateText(d);
+    export default {
+        components: {
+            WordCloud,
+            Sentiment
+        },
+        data() {
+            return {
+                data: [
+                    {
+                        name: "admin-on-rest",
+                        data: [
+                            {
+                                date: new Date("2020/03/03 14:21:31"),
+                                title: "This is title",
+                                description: "This is a description"
+                            },
+                            {
+                                date: new Date("2020/03/03 15:21:31"),
+                                title: "This is title a new title",
+                                description: "This is a description"
+                            }
+                        ]
+                    },
+                    {
+                        name: "whatsapp",
+                        data: []
                     }
-                }
-            });
-        }
-    },
-    watch: {}
-};
+                ],
+                radius: 10,
+                pickedData: {},
+                startDate: "",
+                endDate: "",
+                value: 0.5,
+                title: "Twitter Data"
+            };
+        },
+        mounted() {
+            d3.select("#event-chart")
+                .data([this.data])
+                .call(this.getChart);
+        },
+        methods: {
+            updateText(event) {
+                this.pickedData = event;
+            }
+        },
+        computed: {
+            getChart() {
+                return eventDrops({
+                    d3,
+                    line: {
+                        height: 50
+                    },
+                    drop: {
+                        radius: this.radius,
+                        date: d => d.date,
+                        onClick: d => {
+                            this.updateText(d);
+                        }
+                    },
+                    label: {
+                        padding: 50,
+                        text: this.title
+                    },
+                    breakpoints: {
+                        small: 576,
+                        medium: 768,
+                        large: 992,
+                        extra: 1200
+                    }
+                });
+            }
+        },
+        watch: {}
+    };
 </script>
 
 <style>
 circle:hover {
     fill: tomato;
+}
+
+#event-chart .line-label {
+    display: none;
+}
+
+#event-chart .viewport {
+    transform: translate(-100px, 20px);
+}
+
+.start text {
+    transform: translate(-75px, -20px);
+    font-weight: bold;
+    font-size: 1.2em;
+    fill: #1976d2;
+}
+.end text {
+    transform: translate(75px, -20px);
+    font-weight: bold;
+    font-size: 1.2em;
+    fill: #1976d2;
 }
 </style>
