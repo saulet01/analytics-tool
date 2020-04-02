@@ -1,5 +1,25 @@
 <template>
     <v-container fluid>
+        <v-row align="center" justify="center">
+            <v-col lg="10" md="9" cols="7" class="text-center">
+                <h1
+                    class="display-1 font-weight-bold"
+                    style="color:red;"
+                    :class="responsiveh1"
+                >Timeline Novelty Visualization</h1>
+            </v-col>
+            <v-col lg="2" md="3" cols="5">
+                <v-chip
+                    class="ma-2"
+                    close
+                    color="primary"
+                    text-color="white"
+                    close-icon="fas fa-heart"
+                >
+                    <v-avatar left color="red">1</v-avatar>Favorites
+                </v-chip>
+            </v-col>
+        </v-row>
         <v-row justify="center">
             <v-col cols="12" lg="6" md="10">
                 <v-card height="430" elevation="4">
@@ -98,6 +118,9 @@
                         extra: 1200
                     }
                 });
+            },
+            responsiveh1() {
+                return { title: this.$vuetify.breakpoint.mdAndDown };
             }
         },
         watch: {}
