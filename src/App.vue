@@ -13,7 +13,6 @@
                         :key="'L' + index"
                         router
                         :to="item.link"
-                        exact
                         active-class="button-link-active"
                     >{{ item.title }}</v-btn>
                 </v-col>
@@ -29,16 +28,6 @@
             dark
             style="position:fixed; top:0; left:0; overflow-y:scroll;"
         >
-            <!-- <v-list-item class="mt-2">
-                <v-img
-                    alt="Vuetify Logo"
-                    class="shrink mr-2 img-fluid"
-                    contain
-                    :src="logo"
-                    transition="scale-transition"
-                    max-width="200"
-                />
-            </v-list-item>-->
             <v-divider class="mt-2"></v-divider>
             <v-list nav dense>
                 <v-list-item-group
@@ -83,7 +72,7 @@
             menuItems: [
                 {
                     title: "Timeline Novelty",
-                    link: "/",
+                    link: "/novelty",
                     icon: "history"
                 },
                 {

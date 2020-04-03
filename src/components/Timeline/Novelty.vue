@@ -15,42 +15,59 @@
                     color="primary"
                     text-color="white"
                     close-icon="fas fa-heart"
+                    to="#favorites"
                 >
-                    <v-avatar left color="red">1</v-avatar>Favorites
+                    <v-avatar left color="red">{{ countFavorites}}</v-avatar>Favorites
                 </v-chip>
             </v-col>
         </v-row>
         <v-row justify="center">
             <v-col cols="12" lg="6" md="10">
                 <v-card height="430" elevation="4">
-                    <v-card-title>{{ pickedData.title }}</v-card-title>
-                    <v-card-subtitle>{{ pickedData.date }}</v-card-subtitle>
-                    <v-card-text>{{ pickedData.description }}</v-card-text>
+                    <v-card-title class="justify-space-between animated fadeIn">
+                        {{ pickedData.title }}
+                        <v-btn
+                            small
+                            color="primary"
+                            @click="addFavorite(pickedData)"
+                            class="animated fadeIn elevation-5"
+                            :style="toggled"
+                            :disabled="checkSelected"
+                        >
+                            Add to Favorites
+                            <v-icon small right>fas fa-heart</v-icon>
+                        </v-btn>
+                    </v-card-title>
+                    <v-card-subtitle class="animated fadeIn">{{ pickedData.date }}</v-card-subtitle>
+                    <v-card-text class="animated fadeIn">{{ pickedData.description }}</v-card-text>
                 </v-card>
             </v-col>
-            <v-col cols="12" lg="6" md="10">
+            <!-- <v-col cols="12" lg="6" md="10">
                 <Sentiment :value="value" />
                 <WordCloud />
-            </v-col>
+            </v-col>-->
         </v-row>
         <v-row>
             <v-col cols="12">
-                <div id="event-chart"></div>
+                <div id="event-chart" class="elevation-5 pt-10"></div>
             </v-col>
         </v-row>
+        <Favorites id="favorites" :timelines="favorites" @sendToParent="messageFromFavorite" />
     </v-container>
 </template>
 
 <script>
     import eventDrops from "event-drops";
-    import WordCloud from "./WordCloud";
-    import Sentiment from "./Sentiment";
+    // import WordCloud from "./WordCloud";
+    // import Sentiment from "./Sentiment";
+    import Favorites from "./Favorties";
     import * as d3 from "d3";
 
     export default {
         components: {
-            WordCloud,
-            Sentiment
+            // WordCloud,
+            // Sentiment,
+            Favorites
         },
         data() {
             return {
@@ -64,7 +81,7 @@
                                 description: "This is a description"
                             },
                             {
-                                date: new Date("2020/03/03 15:21:31"),
+                                date: new Date("2019/10/03 15:21:31"),
                                 title: "This is title a new title",
                                 description: "This is a description"
                             }
@@ -80,7 +97,8 @@
                 startDate: "",
                 endDate: "",
                 value: 0.5,
-                title: "Twitter Data"
+                title: "Twitter Data",
+                favorites: new Array()
             };
         },
         mounted() {
@@ -91,6 +109,14 @@
         methods: {
             updateText(event) {
                 this.pickedData = event;
+            },
+            addFavorite(selected) {
+                this.favorites.push(selected);
+                console.log(this.favorites);
+            },
+            messageFromFavorite(message) {
+                this.favorites = message;
+                // console.log(message);
             }
         },
         computed: {
@@ -121,6 +147,19 @@
             },
             responsiveh1() {
                 return { title: this.$vuetify.breakpoint.mdAndDown };
+            },
+            toggled() {
+                return this.pickedData.title ? "" : "display:none";
+            },
+            checkSelected() {
+                return this.favorites.some(
+                    item =>
+                        item.title === this.pickedData.title &&
+                        item.date === this.pickedData.date
+                );
+            },
+            countFavorites() {
+                return this.favorites.length;
             }
         },
         watch: {}
