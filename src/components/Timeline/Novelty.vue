@@ -58,6 +58,7 @@
 
 <script>
     import eventDrops from "event-drops";
+
     // import WordCloud from "./WordCloud";
     // import Sentiment from "./Sentiment";
     import Favorites from "./Favorties";
@@ -77,12 +78,22 @@
                         data: [
                             {
                                 date: new Date("2020/03/03 14:21:31"),
-                                title: "This is title",
+                                title: "First Title",
                                 description: "This is a description"
                             },
                             {
                                 date: new Date("2019/10/03 15:21:31"),
-                                title: "This is title a new title",
+                                title: "Second Title",
+                                description: "This is a description"
+                            },
+                            {
+                                date: new Date("2019/11/03 15:21:31"),
+                                title: "Fourth Title",
+                                description: "This is a description"
+                            },
+                            {
+                                date: new Date("2019/12/03 15:21:31"),
+                                title: "Fifth Title",
                                 description: "This is a description"
                             }
                         ]
@@ -112,7 +123,6 @@
             },
             addFavorite(selected) {
                 this.favorites.push(selected);
-                console.log(this.favorites);
             },
             messageFromFavorite(message) {
                 this.favorites = message;
