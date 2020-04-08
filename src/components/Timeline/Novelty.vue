@@ -64,6 +64,9 @@
     import Favorites from "./Favorties";
     import * as d3 from "d3";
 
+    const NaturalLanguageUnderstandingV1 = require("ibm-watson/natural-language-understanding/v1");
+    const { IamAuthenticator } = require("ibm-watson/auth");
+
     export default {
         components: {
             // WordCloud,
@@ -109,13 +112,17 @@
                 endDate: "",
                 value: 0.5,
                 title: "Twitter Data",
-                favorites: new Array()
+                favorites: new Array(),
+                stupidData:
+                    "Under the IBM Board Corporate Governance Guidelines, the Directors and Corporate Governance Committee and the full Board annually review the financial and other relationships between the independent directors and IBM as part of the assessment of director independence. The Directors and Corporate Governance Committee makes recommendations to the Board about the independence of non-management directors, and the Board determines whether those directors are independent. In addition to this annual assessment of director independence, independence is monitored by the Directors and Corporate Governance Committee and the full Board on an ongoing basis."
             };
         },
         mounted() {
             d3.select("#event-chart")
                 .data([this.data])
                 .call(this.getChart);
+
+            this.sendIBMRequest();
         },
         methods: {
             updateText(event) {
@@ -127,6 +134,45 @@
             messageFromFavorite(message) {
                 this.favorites = message;
                 // console.log(message);
+            },
+            sendIBMRequest() {
+                const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1(
+                    {
+                        version: "2019-07-12",
+                        authenticator: new IamAuthenticator({
+                            apikey: "wZssRraFPfPDFlmdgZZdi5Drak-oaPxjjMcqTIU8yrhH"
+                        }),
+                        url:
+                            "https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/31d4411e-361b-4e75-8810-94c3bf318611",
+                        headers: {
+                            "Access-Control-Allow-Origin": "*",
+                            "Access-Control-Allow-Methods":
+                                "POST, GET, PUT, OPTIONS, DELETE",
+                            "Access-Control-Allow-Headers":
+                                "Access-Control-Allow-Methods, Access-Control-Allow-Origin, Origin, Accept, Content-Type",
+                            "Content-Type": "application/json",
+                            Accept: "application/json"
+                        }
+                    }
+                );
+
+                const analyzeParams = {
+                    url: "www.ibm.com",
+                    features: {
+                        categories: {
+                            limit: 3
+                        }
+                    }
+                };
+
+                naturalLanguageUnderstanding
+                    .analyze(analyzeParams)
+                    .then(analysisResults => {
+                        console.log(analysisResults);
+                    })
+                    .catch(err => {
+                        console.log("error:", err);
+                    });
             }
         },
         computed: {
