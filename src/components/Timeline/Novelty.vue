@@ -1,5 +1,6 @@
 <template>
     <v-container fluid>
+        <h1 v-if="categories">{{ categories[0] }}</h1>
         <v-row align="center" justify="center">
             <v-col lg="10" md="9" cols="7" class="text-center">
                 <h1
@@ -111,6 +112,7 @@
                 startDate: "",
                 endDate: "",
                 value: 0.5,
+                categories: [],
                 title: "Twitter Data",
                 favorites: new Array(),
                 stupidData:
@@ -143,16 +145,7 @@
                             apikey: "wZssRraFPfPDFlmdgZZdi5Drak-oaPxjjMcqTIU8yrhH"
                         }),
                         url:
-                            "https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/31d4411e-361b-4e75-8810-94c3bf318611",
-                        headers: {
-                            "Access-Control-Allow-Origin": "*",
-                            "Access-Control-Allow-Methods":
-                                "POST, GET, PUT, OPTIONS, DELETE",
-                            "Access-Control-Allow-Headers":
-                                "Access-Control-Allow-Methods, Access-Control-Allow-Origin, Origin, Accept, Content-Type",
-                            "Content-Type": "application/json",
-                            Accept: "application/json"
-                        }
+                            "https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/31d4411e-361b-4e75-8810-94c3bf318611"
                     }
                 );
 
@@ -168,6 +161,7 @@
                 naturalLanguageUnderstanding
                     .analyze(analyzeParams)
                     .then(analysisResults => {
+                        this.categories = analysisResults.result.categories;
                         console.log(analysisResults);
                     })
                     .catch(err => {

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-row>
+        <v-row align="center" justify="center">
             <v-col cols="3" sm="6" md="3">
                 <v-menu
                     v-model="menu"
@@ -34,6 +34,9 @@
                     </v-date-picker>
                 </v-menu>
             </v-col>
+            <v-col cols="3">
+                <p>Total Email: {{ original.length }}</p>
+            </v-col>
         </v-row>
         <v-row>
             <v-col lg="7" md="7" sm="12" cols="12">
@@ -63,7 +66,7 @@
                                             :dy="d.dy"
                                             :text-anchor="d.textAnchor"
                                             :transform="d.transform"
-                                            :style="{ fontSize: chartStyling.fontSize + 'px' }"
+                                            :style="{ fontSize: chartStyling.fontSize + 'px', fill: d.fill }"
                                             :data="d.data"
                                             :class="objectNode()"
                                             @mouseover="mouseOver(d)"
@@ -71,6 +74,12 @@
                                             @click="selectedItem(d.data)"
                                         >{{ d.text }}</text>
                                     </g>
+                                </g>
+                                <g>
+                                    <!-- <text
+                                            v-for="(item, index) in getNodes.fill"
+                                            :key="index +'A'"
+                                    >{{ item }}</text>-->
                                 </g>
                             </svg>
                         </div>
@@ -399,8 +408,12 @@
                 };
             },
             drawNodes() {
+                var colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+                // console.log(colorScale);
+
                 var root = this.cluster(d3.hierarchy(this.data));
                 let getNodes = root.leaves().map((d, i) => {
+                    // console.log(d.data.group);
                     let textAnchor = d.x < 180 ? "start" : "end";
                     let text = d.data.id.split("@")[0];
                     let transform =
@@ -416,7 +429,8 @@
                         text: text,
                         textAnchor: textAnchor,
                         transform: transform,
-                        data: d
+                        data: d,
+                        fill: colorScale(d.data.group)
                     };
                 });
 
