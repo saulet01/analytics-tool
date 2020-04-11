@@ -1,117 +1,94 @@
 <template>
-  <v-app dark>
+  <v-app>
+    <v-app-bar app color="primary" dark>
+      <v-row align="center">
+        <v-col md="8" lg="9" cols="8">
+          <p class="mt-4" :class="responsiveText">VAST Challenge 2014</p>
+        </v-col>
+        <v-col lg="3" md="4" cols="6" class="hidden-md-and-down">
+          <v-btn
+            small
+            text
+            v-for="(item, index) in menuItems"
+            :key="'L' + index"
+            router
+            :to="item.link"
+            active-class="button-link-active"
+            >{{ item.title }}</v-btn
+          >
+        </v-col>
+      </v-row>
+      <v-app-bar-nav-icon @click="drawer = true"></v-app-bar-nav-icon>
+    </v-app-bar>
+
     <v-navigation-drawer
       v-model="drawer"
-      :mini-variant="miniVariant"
-      :clipped="clipped"
-      fixed
-      app
-    >
-      <v-list>
-        <v-list-item
-          v-for="(item, i) in items"
-          :key="i"
-          :to="item.to"
-          router
-          exact
-        >
-          <v-list-item-action>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title v-text="item.title" />
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
-    <v-app-bar
-      :clipped-left="clipped"
-      fixed
-      app
-    >
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-btn
-        icon
-        @click.stop="miniVariant = !miniVariant"
-      >
-        <v-icon>mdi-{{ `chevron-${miniVariant ? 'right' : 'left'}` }}</v-icon>
-      </v-btn>
-      <v-btn
-        icon
-        @click.stop="clipped = !clipped"
-      >
-        <v-icon>mdi-application</v-icon>
-      </v-btn>
-      <v-btn
-        icon
-        @click.stop="fixed = !fixed"
-      >
-        <v-icon>mdi-minus</v-icon>
-      </v-btn>
-      <v-toolbar-title v-text="title" />
-      <v-spacer />
-      <v-btn
-        icon
-        @click.stop="rightDrawer = !rightDrawer"
-      >
-        <v-icon>mdi-menu</v-icon>
-      </v-btn>
-    </v-app-bar>
-    <v-content>
-      <v-container>
-        <nuxt />
-      </v-container>
-    </v-content>
-    <v-navigation-drawer
-      v-model="rightDrawer"
-      :right="right"
+      absolute
       temporary
-      fixed
+      color="#c6382c"
+      dark
+      style="position:fixed; top:0; left:0; overflow-y:scroll;"
     >
-      <v-list>
-        <v-list-item @click.native="right = !right">
-          <v-list-item-action>
-            <v-icon light>
-              mdi-repeat
-            </v-icon>
-          </v-list-item-action>
-          <v-list-item-title>Switch drawer (click me)</v-list-item-title>
-        </v-list-item>
+      <v-divider class="mt-2"></v-divider>
+      <v-list nav dense>
+        <v-list-item-group
+          active-class="text--accent-4"
+          v-for="(item, index) in menuItems"
+          :key="'K' + index"
+        >
+          <v-list-item :to="item.link" class="mt-2">
+            <v-list-item-icon>
+              <v-icon>fas fa-{{ item.icon }}</v-icon>
+            </v-list-item-icon>
+            <v-list-item-title>{{ item.title }}</v-list-item-title>
+          </v-list-item>
+        </v-list-item-group>
       </v-list>
     </v-navigation-drawer>
-    <v-footer
-      :fixed="fixed"
-      app
-    >
-      <span>&copy; {{ new Date().getFullYear() }}</span>
-    </v-footer>
+
+    <v-content>
+      <nuxt />
+    </v-content>
   </v-app>
 </template>
 
 <script>
 export default {
-  data () {
-    return {
-      clipped: false,
-      drawer: false,
-      fixed: false,
-      items: [
-        {
-          icon: 'mdi-apps',
-          title: 'Welcome',
-          to: '/'
-        },
-        {
-          icon: 'mdi-chart-bubble',
-          title: 'Inspire',
-          to: '/inspire'
-        }
-      ],
-      miniVariant: false,
-      right: true,
-      rightDrawer: false,
-      title: 'Vuetify.js'
+  computed: {
+    responsiveText() {
+      return {
+        "body-1": this.$vuetify.breakpoint.mdAndDown,
+        headline: this.$vuetify.breakpoint.mdAndUp
+      };
     }
-  }
-}
+  },
+
+  data: () => ({
+    drawer: false,
+    collapseOnScroll: true,
+    menuItems: [
+      {
+        title: "Timeline Novelty",
+        link: "/novelty",
+        icon: "history"
+      },
+      {
+        title: "Email",
+        link: "/email",
+        icon: "at"
+      }
+    ]
+  })
+};
 </script>
+<style scoped>
+.button-link-active {
+  background-color: #c6382c !important;
+}
+.button-link-active::before {
+  background-color: #c6382c !important;
+}
+/* #app {
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+} */
+</style>

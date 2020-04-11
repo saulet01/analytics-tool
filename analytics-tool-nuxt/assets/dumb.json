@@ -1,0 +1,30 @@
+{
+    "nodes": [{
+            "id": "saulet",
+            "group": 1
+        },
+        {
+            "id": "saken",
+            "group": 1
+        },
+        {
+            "id": "kamila",
+            "group": 1
+        },
+        {
+            "id": "dinara",
+            "group": 1
+        }
+    ],
+    "links": [{
+            "source": "saulet",
+            "target": ["dinara", "kamila"],
+            "message": "priveet"
+        },
+        {
+            "source": "saken",
+            "target": ["saulet", "kamila"],
+            "message": "kalaysin"
+        }
+    ]
+}
