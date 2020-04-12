@@ -40,31 +40,35 @@ async function start() {
   app.post('/api/ibm-nlu', async (req, res) => {
     console.log(req.body.text);
 
-    // const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
-    //   version: '2019-07-12',
-    //   authenticator: new IamAuthenticator({
-    //     apikey: 'wZssRraFPfPDFlmdgZZdi5Drak-oaPxjjMcqTIU8yrhH',
-    //   }),
-    //   url: 'https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/31d4411e-361b-4e75-8810-94c3bf318611',
-    // });
+    const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
+      version: '2019-07-12',
+      authenticator: new IamAuthenticator({
+        apikey: 'wZssRraFPfPDFlmdgZZdi5Drak-oaPxjjMcqTIU8yrhH',
+      }),
+      url: 'https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/31d4411e-361b-4e75-8810-94c3bf318611',
+    });
 
-    // const analyzeParams = {
-    //   'url': 'www.ibm.com',
-    //   'features': {
-    //     'categories': {
-    //       'limit': 3
-    //     }
-    //   }
-    // };
+    const analyzeParams = {
+      'text': req.body.text,
+      'features': {
+        "sentiment": {},
+        "keywords": {
+          'limit': 20
+        },
+        "emotion": {
+          'limit': 3
+        }
+      }
+    };
 
-    // naturalLanguageUnderstanding.analyze(analyzeParams)
-    //   .then(analysisResults => {
-    //     res.json(analysisResults)
-    //     console.log(JSON.stringify(analysisResults, null, 2));
-    //   })
-    //   .catch(err => {
-    //     console.log('error:', err);
-    //   });
+    naturalLanguageUnderstanding.analyze(analyzeParams)
+      .then(analysisResults => {
+        res.json(analysisResults)
+      })
+      .catch(err => {
+        res.json(err)
+        console.log('error:', err);
+      });
   })
 
   // Give nuxt middleware to express

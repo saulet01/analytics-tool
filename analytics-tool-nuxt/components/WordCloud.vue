@@ -1,5 +1,5 @@
 <template>
-    <v-card class="mt-4 justify-center" elevation="4" height="260">
+    <v-card class="mt-4 justify-center" elevation="4" height="260" :loading="isLoading">
         <!-- <v-card-title class="justify-center font-weight-bold">Word Cloud</v-card-title> -->
 
         <div class="d-flex pt-2 justify-space-between mb-n5">
@@ -12,7 +12,7 @@
                 :close-on-content-click="settings.clonOnContent"
             >
                 <template v-slot:activator="{ on }">
-                    <v-btn class="mr-2" small fab dark color="primary" v-on="on" v-if="words">
+                    <v-btn class="mr-2" small fab dark color="primary" v-on="on" v-if="keywords">
                         <v-icon dark>fas fa-cog</v-icon>
                     </v-btn>
                 </template>
@@ -79,7 +79,7 @@
                         :spiral="settings.spiral"
                         :padding="settings.padding"
                         :colors="colors"
-                        :data="words"
+                        :data="renamedArray"
                         :fontSizeMapper="this.fontSizeMapper"
                         height="180"
                         :width="responsiveWidth"
@@ -95,6 +95,14 @@
 
     export default {
         name: "app",
+        props: {
+            isLoading: {
+                type: Boolean
+            },
+            keywords: {
+                type: Array
+            }
+        },
         data() {
             return {
                 settings: {
@@ -104,25 +112,7 @@
                     closeOnClick: true,
                     clonOnContent: false
                 },
-                colors: ["#1976D2"],
-                words: [
-                    { text: "Vue", value: 100 },
-                    { text: "js", value: 200 },
-                    { text: "is", value: 500 },
-                    { text: "very cool", value: 100 },
-                    { text: "lunch", value: 100 },
-                    { text: "sau1", value: 100 },
-                    { text: "sau2", value: 100 },
-                    { text: "sau3", value: 100 },
-                    { text: "sau4", value: 100 },
-                    { text: "sau5", value: 100 },
-                    { text: "sau6", value: 100 },
-                    { text: "sau7", value: 100 },
-                    { text: "sau8", value: 100 },
-                    { text: "sa9", value: 100 },
-                    { text: "sau10", value: 100 },
-                    { text: "sau11", value: 100 }
-                ]
+                colors: ["#1976D2"]
             };
         },
         methods: {
@@ -135,13 +125,13 @@
             fontSizeMapper() {
                 switch (this.$vuetify.breakpoint.name) {
                     case "sm":
-                        return word => Math.log2(word.value) * 3;
+                        return word => Math.log2(word.value) * 2;
                     case "xs":
-                        return word => Math.log2(word.value) * 3;
+                        return word => Math.log2(word.value) * 2;
                     case "md":
-                        return word => Math.log2(word.value) * 4;
+                        return word => Math.log2(word.value) * 2;
                     default:
-                        return word => Math.log2(word.value) * 4;
+                        return word => Math.log2(word.value) * 2.5;
                 }
             },
             responsiveWidth() {
@@ -155,6 +145,14 @@
                     default:
                         return "600";
                 }
+            },
+            renamedArray() {
+                return this.keywords.map(d => {
+                    return {
+                        text: d.text,
+                        value: parseInt(d.relevance * 100)
+                    };
+                });
             }
         }
     };

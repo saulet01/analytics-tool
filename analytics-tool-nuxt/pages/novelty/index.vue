@@ -1,6 +1,10 @@
 <template>
     <v-container fluid>
-        <h1 v-if="categories">{{ categories[0] }}</h1>
+        <v-snackbar v-model="snackbar" top right>
+            {{ error }}
+            <v-btn color="primary" small @click="sendIBMRequest()">Try Again</v-btn>
+            <v-btn color="error" small @click="snackbar = false">Close</v-btn>
+        </v-snackbar>
         <v-row align="center" justify="center">
             <v-col lg="10" md="9" cols="7" class="text-center">
                 <h1
@@ -24,7 +28,7 @@
         </v-row>
         <v-row justify="center">
             <v-col cols="12" lg="6" md="10">
-                <v-card height="430" elevation="4" :loading="isLoading">
+                <v-card height="430" elevation="4">
                     <v-card-title class="justify-space-between animated fadeIn">
                         {{ pickedData.title }}
                         <v-btn
@@ -52,8 +56,8 @@
                 </v-card>
             </v-col>
             <v-col cols="12" lg="6" md="10">
-                <Sentiment :value="value" />
-                <WordCloud />
+                <Sentiment :value="roundFloatNumber" :emotions="emotions" :isLoading="isLoading" />
+                <WordCloud :isLoading="isLoading" :keywords="keywords" />
             </v-col>
         </v-row>
         <v-row>
@@ -120,11 +124,13 @@
                 pickedData: {},
                 startDate: "",
                 endDate: "",
-                value: 0.5,
-                categories: [],
+                value: null,
+                emotions: [],
                 title: "Twitter Data",
-                result: [],
+                keywords: [],
                 favorites: new Array(),
+                snackbar: false,
+                error: "Error 403 | 503",
                 stupidData:
                     "Under the IBM Board Corporate Governance Guidelines, the Directors and Corporate Governance Committee and the full Board annually review the financial and other relationships between the independent directors and IBM as part of the assessment of director independence. The Directors and Corporate Governance Committee makes recommendations to the Board about the independence of non-management directors, and the Board determines whether those directors are independent. In addition to this annual assessment of director independence, independence is monitored by the Directors and Corporate Governance Committee and the full Board on an ongoing basis."
             };
@@ -136,7 +142,6 @@
         },
         methods: {
             updateText(event) {
-                this.isLoading = true;
                 this.pickedData = event;
                 this.sendIBMRequest();
             },
@@ -148,17 +153,44 @@
                 // console.log(message);
             },
             sendIBMRequest() {
+                this.isLoading = true;
+
                 return axios({
                     url: "http://localhost:3000/api/ibm-nlu",
                     method: "post",
                     data: {
-                        text: "whatsap"
+                        text: this.stupidData
                     }
-                }).then(res => {
-                    // console.log(res);
-                    // this.result = res.data.result.categories;
-                    // this.isLoading = false;
-                });
+                })
+                    .then(res => {
+                        console.log(res.data.result);
+                        // Sentiment
+                        this.value = res.data.result.sentiment.document.score;
+                        // Emotion
+                        let temporaryEmotions =
+                            res.data.result.emotion.document.emotion;
+
+                        var sortable = [];
+                        for (var item in temporaryEmotions) {
+                            sortable.push([
+                                item,
+                                parseFloat(temporaryEmotions[item].toFixed(2))
+                            ]);
+                        }
+                        sortable.sort(function(a, b) {
+                            return b[1] - a[1];
+                        });
+                        this.emotions = sortable.slice(0, 2);
+
+                        // Keywords
+                        this.keywords = res.data.result.keywords;
+                        this.isLoading = false;
+                    })
+                    .catch(e => {
+                        this.isLoading = false;
+                        this.error = e;
+                        this.snackbar = true;
+                    });
             }
         },
         computed: {
@@ -186,6 +218,9 @@
                         extra: 1200
                     }
                 });
+            },
+            roundFloatNumber() {
+                return this.value ? parseFloat(this.value.toFixed(2)) : 0;
             },
             responsiveh1() {
                 return { title: this.$vuetify.breakpoint.mdAndDown };
