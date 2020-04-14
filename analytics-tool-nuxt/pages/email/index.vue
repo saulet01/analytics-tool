@@ -47,6 +47,7 @@
                                 preserveAspectRatio="xMidYMid meet"
                                 viewBox="0 0 800 650"
                                 class="svg-content-responsive"
+                                v-show="formatedData"
                             >
                                 <g :transform="style">
                                     <g>
@@ -58,6 +59,7 @@
                                             :class="objectClass(b)"
                                         />
                                     </g>
+
                                     <g>
                                         <text
                                             class="node"
@@ -66,10 +68,7 @@
                                             :dy="d.dy"
                                             :text-anchor="d.textAnchor"
                                             :transform="d.transform"
-                                            :style="{
-                        fontSize: chartStyling.fontSize + 'px',
-                        fill: d.fill
-                      }"
+                                            :style="{ fontSize: chartStyling.fontSize + 'px', fill: d.fill}"
                                             :data="d.data"
                                             @mouseover="mouseOver(d)"
                                             @mouseout="mouseLeave(d)"
@@ -89,18 +88,22 @@
                 </v-card>
             </v-col>
             <v-col lg="5" md="5" sm="12" cols="12">
-                <v-btn width="200" color="warning">
-                    Settings
-                    <v-icon small class="ml-2">fas fa-cog</v-icon>
-                </v-btn>
-                <v-btn width="200" color="success" @click="print">
-                    Save Image
-                    <v-icon small class="ml-2">fas fa-save</v-icon>
-                </v-btn>
-                <!-- <v-expansion-panels>
-                    <v-expansion-panel>
-                        <v-expansion-panel-header class="headline">Settings</v-expansion-panel-header>
-                        <v-expansion-panel-content>
+                <v-menu
+                    offset-y
+                    :close-on-click="chartStyling.closeOnClick"
+                    :close-on-content-click="chartStyling.closeOnContentClick"
+                    transition="slide-y-transition"
+                    nudge-bottom="10"
+                    v-model="showSettings"
+                >
+                    <template v-slot:activator="{ on }">
+                        <v-btn width="200" v-on="on" color="warning" @click="showSettings = true">
+                            Settings
+                            <v-icon small class="ml-2">fas fa-cog</v-icon>
+                        </v-btn>
+                    </template>
+                    <v-card width="500">
+                        <v-card-text>
                             <div class="d-flex">
                                 <v-subheader class="pl-0" style="width:7em;">Diameter:</v-subheader>
                                 <v-slider
@@ -145,9 +148,19 @@
                                     class="mt-2"
                                 ></v-slider>
                             </div>
-                        </v-expansion-panel-content>
-                    </v-expansion-panel>
-                </v-expansion-panels>-->
+                            <v-btn small color="error" @click="showSettings = false">
+                                Close
+                                <v-icon small class="ml-2">fas fa-times</v-icon>
+                            </v-btn>
+                        </v-card-text>
+                    </v-card>
+                </v-menu>
+
+                <v-btn width="200" color="success" @click="print">
+                    Save Image
+                    <v-icon small class="ml-2">fas fa-save</v-icon>
+                </v-btn>
+
                 <SelectionComponent :selectedemail="selectedData" />
             </v-col>
             <v-col></v-col>
@@ -184,6 +197,7 @@
         },
         data() {
             return {
+                showSettings: false,
                 dates: [],
                 datePicker: {
                     limitMin: "",
@@ -197,7 +211,9 @@
                     maxTension: 1,
                     minTension: 0.1,
                     fontSize: 9,
-                    textOffset: 8
+                    textOffset: 8,
+                    closeOnClick: true,
+                    closeOnContentClick: false
                 },
                 records: "",
                 original: [],
