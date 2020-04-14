@@ -48,6 +48,7 @@
                                 viewBox="0 0 800 650"
                                 class="svg-content-responsive"
                                 v-show="formatedData"
+                                ref="diagram"
                             >
                                 <g :transform="style">
                                     <g>
@@ -156,7 +157,7 @@
                     </v-card>
                 </v-menu>
 
-                <v-btn width="200" color="success" @click="print">
+                <v-btn width="200" color="success" @click="saveSvg">
                     Save Image
                     <v-icon small class="ml-2">fas fa-save</v-icon>
                 </v-btn>
@@ -165,7 +166,6 @@
             </v-col>
             <v-col></v-col>
         </v-row>
-        <SaveAsImage :dialog="dialog" :output="output" @close-dialog="updateDialog" />
 
         <EdgeTable v-bind:originaldata="original" />
     </div>
@@ -180,13 +180,12 @@
     const moment = extendMoment(Moment);
     import emails from "~/static/email_100.json";
     import clusters from "~/static/EmployeeRecords.json";
-    import SaveAsImage from "~/components/SaveAsImage";
+    import saveSvgAsPng from 'save-svg-as-png'
 
     export default {
         components: {
             EdgeTable,
-            SelectionComponent,
-            SaveAsImage
+            SelectionComponent
         },
 
         filters: {
@@ -252,17 +251,13 @@
             }
         },
         methods: {
+            saveSvg(){
+                saveSvgAsPng.saveSvgAsPng(this.$refs.diagram, "diagram.png", {scale: 2, backgroundColor: "#FFFFFF", excludeUnusedCss: true});
+            },
             updateDialog(newValue) {
                 this.dialog = newValue;
             },
-            async print() {
-                this.dialog = true;
-                const el = this.$refs.saveSvg;
-                const options = {
-                    type: "dataURL"
-                };
-                this.output = await this.$html2canvas(el, options);
-            },
+            
             selectedItem(item) {
                 Array.prototype.push.apply(item.data.outgoing, item.data.incoming);
                 this.selectedData = item.data.outgoing;
