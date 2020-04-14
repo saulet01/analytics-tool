@@ -78,6 +78,9 @@ module.exports = {
       icons: 'fa'
     }
   },
+  transition: {
+    name: 'slide-x-transition'
+  },
   /*
    ** Build configuration
    */

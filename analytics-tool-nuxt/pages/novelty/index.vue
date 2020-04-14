@@ -30,18 +30,22 @@
             <v-col cols="12" lg="6" md="10">
                 <v-card height="430" elevation="4">
                     <v-card-title class="justify-space-between animated fadeIn">
-                        {{ pickedData.title }}
-                        <v-btn
-                            small
-                            color="primary"
-                            @click="addFavorite(pickedData)"
-                            class="animated fadeIn elevation-5"
-                            :style="toggled"
-                            :disabled="checkSelected"
-                        >
-                            Add to Favorites
-                            <v-icon small right>fas fa-heart</v-icon>
-                        </v-btn>
+                        <v-row>
+                            <v-col cols="12" md="8" lg="8">{{ pickedData.title }}</v-col>
+                            <v-col cols="12" md="4" lg="4">
+                                <v-btn
+                                    small
+                                    color="primary"
+                                    @click="addFavorite(pickedData)"
+                                    class="animated fadeIn elevation-5"
+                                    :style="toggled"
+                                    :disabled="checkSelected"
+                                >
+                                    Add to Favorites
+                                    <v-icon small right>fas fa-heart</v-icon>
+                                </v-btn>
+                            </v-col>
+                        </v-row>
                     </v-card-title>
                     <v-card-subtitle class="animated fadeIn">
                         {{
@@ -65,6 +69,21 @@
                 <div id="event-chart" class="elevation-5 pt-10"></div>
             </v-col>
         </v-row>
+        <v-row>
+            <v-col>
+                <v-card
+                    v-show="tooltip.showTooltip"
+                    style="position: absolute;"
+                    :style="tooltipStyle"
+                    elevation="5"
+                    width="600"
+                >
+                    <v-card-title>{{ tooltipTitle }}</v-card-title>
+                    <v-card-subtitle>{{ tooltip.date }}</v-card-subtitle>
+                    <v-card-text>{{ tooltipDescription }}</v-card-text>
+                </v-card>
+            </v-col>
+        </v-row>
         <Favorites id="favorites" :timelines="favorites" @sendToParent="messageFromFavorite" />
     </v-container>
 </template>
@@ -77,8 +96,6 @@
     import Favorites from "~/components/Favorties";
     import * as d3 from "d3";
     import axios from "axios";
-    const NaturalLanguageUnderstandingV1 = require("ibm-watson/natural-language-understanding/v1");
-    const { IamAuthenticator } = require("ibm-watson/auth");
 
     export default {
         components: {
@@ -99,8 +116,10 @@
                             },
                             {
                                 date: new Date("2019/10/03 15:21:31"),
-                                title: "Second Title",
-                                description: "This is a description"
+                                title:
+                                    "Lorem dolor sit amet, consectetur adipiscing elit. Pellentesque vel mi ut elit tempor aliquam eget eget enim. Proin cursus eleifend pretium. Aliquam cursus ",
+                                description:
+                                    "Lorem dolor sit amet, consectetur adipiscing elit. Pellentesque vel mi ut velit tempor aliquam eget eget enim. Proin cursus eleifend pretium. Aliquam cursus pellentesque interdum. Vivamus placerat id leo a pellentesque. Vivamus a congue urna, sed porta eros. Etiam finibus magna et est aliquam, sed semper libero facilisis.  Donec lectus lorem, rhoncus vitae quam eget, vulputate gravida elit. Praesent ultricies eros id velit condimentum, eu ultrices nisl consequat."
                             },
                             {
                                 date: new Date("2019/11/03 15:21:31"),
@@ -131,6 +150,14 @@
                 favorites: new Array(),
                 snackbar: false,
                 error: "Error 403 | 503",
+                tooltip: {
+                    showTooltip: false,
+                    top: 0,
+                    left: 0,
+                    title: "",
+                    date: "",
+                    description: ""
+                },
                 stupidData:
                     "Under the IBM Board Corporate Governance Guidelines, the Directors and Corporate Governance Committee and the full Board annually review the financial and other relationships between the independent directors and IBM as part of the assessment of director independence. The Directors and Corporate Governance Committee makes recommendations to the Board about the independence of non-management directors, and the Board determines whether those directors are independent. In addition to this annual assessment of director independence, independence is monitored by the Directors and Corporate Governance Committee and the full Board on an ongoing basis."
             };
@@ -143,7 +170,7 @@
         methods: {
             updateText(event) {
                 this.pickedData = event;
-                this.sendIBMRequest();
+                // this.sendIBMRequest();
             },
             addFavorite(selected) {
                 this.favorites.push(selected);
@@ -194,6 +221,23 @@
             }
         },
         computed: {
+            tooltipTitle() {
+                return this.tooltip.title.length > 60
+                    ? this.tooltip.title.slice(0, 60) + "...."
+                    : this.tooltip.title;
+            },
+            tooltipDescription() {
+                return this.tooltip.description.length > 200
+                    ? this.tooltip.description.slice(0, 200) + "...."
+                    : this.tooltip.description;
+            },
+
+            tooltipStyle() {
+                return {
+                    top: this.tooltip.top + "px",
+                    left: this.tooltip.left + "px"
+                };
+            },
             getChart() {
                 return eventDrops({
                     d3,
@@ -205,6 +249,17 @@
                         date: d => d.date,
                         onClick: d => {
                             this.updateText(d);
+                        },
+                        onMouseOver: data => {
+                            this.tooltip.showTooltip = true;
+                            this.tooltip.top = d3.event.pageY - 30;
+                            this.tooltip.left = d3.event.pageX;
+                            this.tooltip.title = data.title;
+                            this.tooltip.description = data.description;
+                            this.tooltip.date = data.date;
+                        },
+                        onMouseOut: data => {
+                            this.tooltip.showTooltip = false;
                         }
                     },
                     label: {

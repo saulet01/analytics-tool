@@ -43,18 +43,22 @@
                         <v-timeline-item v-for="(timeline, i) in displayCards" :key="'A' + i">
                             <v-card class="elevation-5">
                                 <v-card-title class="justify-space-between">
-                                    {{ timeline.title }}
-                                    <v-btn
-                                        fab
-                                        small
-                                        dark
-                                        class="animated fadeIn"
-                                        color="red"
-                                        :style="hideButtons"
-                                        @click="removeEvent(timeline)"
-                                    >
-                                        <v-icon small>fas fa-trash</v-icon>
-                                    </v-btn>
+                                    <v-row>
+                                        <v-col cols="11">{{ timeline.title }}</v-col>
+                                        <v-col cols="1">
+                                            <v-btn
+                                                fab
+                                                small
+                                                dark
+                                                class="animated fadeIn"
+                                                color="red"
+                                                :style="hideButtons"
+                                                @click="removeEvent(timeline)"
+                                            >
+                                                <v-icon small>fas fa-trash</v-icon>
+                                            </v-btn>
+                                        </v-col>
+                                    </v-row>
                                 </v-card-title>
 
                                 <v-card-subtitle>{{ timeline.date }}</v-card-subtitle>
@@ -68,31 +72,20 @@
         <v-row>
             <v-pagination class="mt-3" :length="pageLength" v-model="page"></v-pagination>
         </v-row>
-
-        <v-dialog v-model="dialog" fullscreen hide-overlay transition="dialog-bottom-transition">
-            <v-card>
-                <v-toolbar dark color="primary">
-                    <v-btn icon dark @click="dialog = false">
-                        <v-icon>mdi-close</v-icon>
-                    </v-btn>
-                    <v-toolbar-title>Download Image by "Right Click"</v-toolbar-title>
-                    <v-spacer></v-spacer>
-                    <v-toolbar-items>
-                        <v-btn dark text @click="dialog = false">Close</v-btn>
-                    </v-toolbar-items>
-                </v-toolbar>
-
-                <img :src="output" style="max-width: 100%" alt />
-            </v-card>
-        </v-dialog>
+        <SaveAsImage :dialog="dialog" :output="output" @close-dialog="updateDialog" />
     </div>
 </template>
 
 <script>
     import Moment from "moment";
+    import SaveAsImage from "~/components/SaveAsImage";
 
     export default {
         props: ["timelines"],
+
+        components: {
+            SaveAsImage
+        },
 
         data() {
             return {
@@ -155,6 +148,9 @@
                     type: "dataURL"
                 };
                 this.output = await this.$html2canvas(el, options);
+            },
+            updateDialog(dialogValue) {
+                this.dialog = dialogValue;
             }
         }
     };

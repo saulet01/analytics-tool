@@ -5,14 +5,22 @@
         <div class="d-flex pt-2 justify-space-between mb-n5">
             <p></p>
             <p class="font-weight-bold title" style="color: red;">Word Cloud</p>
-
+            <p v-show="keywords.length == 0"></p>
             <v-menu
                 offset-y
                 :close-on-click="settings.closeOnClick"
                 :close-on-content-click="settings.clonOnContent"
             >
                 <template v-slot:activator="{ on }">
-                    <v-btn class="mr-2" small fab dark color="primary" v-on="on" v-if="keywords">
+                    <v-btn
+                        class="mr-2"
+                        small
+                        fab
+                        dark
+                        color="primary"
+                        v-on="on"
+                        v-show="keywords.length > 0"
+                    >
                         <v-icon dark>fas fa-cog</v-icon>
                     </v-btn>
                 </template>
