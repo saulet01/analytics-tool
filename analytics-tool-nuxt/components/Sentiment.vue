@@ -1,8 +1,7 @@
 <template>
     <v-card elevation="4" :height="responsiveHeight" :loading="isLoading">
         <v-card-title
-            class="justify-center title font-weight-bold"
-            style="color:red;"
+            class="justify-center title font-weight-bold neutral-color"
         >Sentiment and Emotion Analysis</v-card-title>
         <v-card-text class="mt-n3 d-flex flex-row justify-space-between align-center">
             <v-row justify="center" :style="display">
@@ -42,7 +41,9 @@
                             height="40"
                             transition="scale-transition"
                         ></v-img>
-                        <p class="text-center body-1 mt-2">{{ item[0] + " " + item[1] + "%"}}</p>
+                        <p
+                            class="text-center neutral-color body-1 mt-2"
+                        >{{ item[0] + " " + item[1] + "%"}}</p>
                     </div>
                 </v-col>
             </v-row>

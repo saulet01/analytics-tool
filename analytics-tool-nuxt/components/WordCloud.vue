@@ -4,7 +4,7 @@
 
         <div class="d-flex pt-2 justify-space-between mb-n5">
             <p></p>
-            <p class="font-weight-bold title" style="color: red;">Word Cloud</p>
+            <p class="font-weight-bold neutral-color title">Word Cloud</p>
             <p v-show="keywords.length == 0"></p>
             <v-menu
                 offset-y

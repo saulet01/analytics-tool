@@ -36,7 +36,7 @@ module.exports = {
   /*
    ** Global CSS
    */
-  css: [],
+  css: ['~/assets/main.css'],
   /*
    ** Plugins to load before mounting the App
    */
@@ -70,7 +70,15 @@ module.exports = {
           info: colors.teal.lighten1,
           warning: colors.amber.base,
           error: colors.deepOrange.accent4,
-          success: colors.green.accent3
+          success: colors.green.accent3,
+          alt: "#DF5060",
+          neutral: "#fe7d3b"
+        },
+        light: {
+          primary: colors.blue.darken2,
+          warning: colors.amber.base,
+          alt: "#DF5060",
+          neutral: "#fe7d3b"
         }
       }
     },

@@ -18,6 +18,7 @@
                             prepend-icon="far fa-calendar-alt"
                             readonly
                             v-on="on"
+                            color="primary"
                         ></v-text-field>
                     </template>
 
@@ -27,9 +28,10 @@
                         :max="datePicker.limitMax"
                         @input="menu2 = false"
                         range
+                        color="primary"
                     >
                         <v-spacer></v-spacer>
-                        <v-btn text color="primary" @click="menu = false">Cancel</v-btn>
+                        <v-btn text color="alt" @click="menu = false">Cancel</v-btn>
                         <v-btn text color="primary" @click="$refs.menu.save(dates)">OK</v-btn>
                     </v-date-picker>
                 </v-menu>
@@ -55,7 +57,7 @@
                                         <path
                                             class="link"
                                             v-for="(b, i) in getLinks"
-                                            :key="i"
+                                            :key="'AA' + i"
                                             :d="getLines(b)"
                                             :class="objectClass(b)"
                                         />
@@ -71,7 +73,7 @@
                                             :transform="d.transform"
                                             :style="{ fontSize: chartStyling.fontSize + 'px', fill: d.fill}"
                                             :data="d.data"
-                                            @mouseover="mouseOver(d)"
+                                            @mouseover="mouseOver(d, $event)"
                                             @mouseout="mouseLeave(d)"
                                             @click="selectedItem(d.data)"
                                         >{{ d.text | splitItem }}</text>
@@ -98,7 +100,13 @@
                     v-model="showSettings"
                 >
                     <template v-slot:activator="{ on }">
-                        <v-btn width="200" v-on="on" color="warning" @click="showSettings = true">
+                        <v-btn
+                            width="200"
+                            v-on="on"
+                            dark
+                            color="primary"
+                            @click="showSettings = true"
+                        >
                             Settings
                             <v-icon small class="ml-2">fas fa-cog</v-icon>
                         </v-btn>
@@ -106,7 +114,10 @@
                     <v-card width="500">
                         <v-card-text>
                             <div class="d-flex">
-                                <v-subheader class="pl-0" style="width:7em;">Diameter:</v-subheader>
+                                <v-subheader
+                                    class="pl-0 font-weight-bold"
+                                    style="width:7em;"
+                                >Diameter:</v-subheader>
                                 <v-slider
                                     v-model="updateDiameter"
                                     class="mt-2"
@@ -114,10 +125,15 @@
                                     min="600"
                                     :size="chartStyling.diameter"
                                     thumb-label
+                                    color="primary"
+                                    track-color="#BDBDBD"
                                 ></v-slider>
                             </div>
                             <div class="d-flex mt-n4">
-                                <v-subheader class="pl-0" style="width:7em;">Tension:</v-subheader>
+                                <v-subheader
+                                    class="pl-0 font-weight-bold"
+                                    style="width:7em;"
+                                >Tension:</v-subheader>
                                 <v-slider
                                     v-model="getTension"
                                     max="10"
@@ -125,10 +141,15 @@
                                     :size="chartStyling.diameter"
                                     thumb-label
                                     class="mt-2"
+                                    color="primary"
+                                    track-color="#BDBDBD"
                                 ></v-slider>
                             </div>
                             <div class="d-flex mt-n4">
-                                <v-subheader class="pl-0" style="width:7em;">Text Offset:</v-subheader>
+                                <v-subheader
+                                    class="pl-0 font-weight-bold"
+                                    style="width:7em;"
+                                >Text Offset:</v-subheader>
                                 <v-slider
                                     v-model="chartStyling.textOffset"
                                     max="15"
@@ -136,10 +157,15 @@
                                     :size="chartStyling.diameter"
                                     thumb-label
                                     class="mt-2"
+                                    color="primary"
+                                    track-color="#BDBDBD"
                                 ></v-slider>
                             </div>
                             <div class="d-flex mt-n4">
-                                <v-subheader class="pl-0" style="width:7em;">Text Size:</v-subheader>
+                                <v-subheader
+                                    class="pl-0 font-weight-bold"
+                                    style="width:7em;"
+                                >Text Size:</v-subheader>
                                 <v-slider
                                     v-model="chartStyling.fontSize"
                                     max="12"
@@ -147,9 +173,11 @@
                                     :size="chartStyling.diameter"
                                     thumb-label
                                     class="mt-2"
+                                    color="primary"
+                                    track-color="#BDBDBD"
                                 ></v-slider>
                             </div>
-                            <v-btn small color="error" @click="showSettings = false">
+                            <v-btn small color="alt" dark @click="showSettings = false">
                                 Close
                                 <v-icon small class="ml-2">fas fa-times</v-icon>
                             </v-btn>
@@ -157,15 +185,34 @@
                     </v-card>
                 </v-menu>
 
-                <v-btn width="200" color="success" @click="saveSvg">
+                <v-btn width="200" color="neutral" dark @click="saveSvg">
                     Save Image
                     <v-icon small class="ml-2">fas fa-save</v-icon>
                 </v-btn>
 
                 <SelectionComponent :selectedemail="selectedData" />
             </v-col>
-            <v-col></v-col>
+            <v-col>
+                <v-card
+                    v-show="tooltip.showTooltip"
+                    :style="tooltipStyle"
+                    style="position: absolute;"
+                    elevation="5"
+                    width="300"
+                >
+                    <v-card-title class="primary-color" style="font-size: 0.8em;">{{ tooltip.text }}</v-card-title>
+                    <v-card-text>
+                        <div style="font-size: 0.8em; color: green;">Sent: {{ tooltip.outgoing }}</div>
+                        <div
+                            style="font-size: 0.8em; color: tomato;"
+                        >Received: {{ tooltip.incoming }}</div>
+                    </v-card-text>
+                </v-card>
+            </v-col>
         </v-row>
+        <v-overlay :value="overlay">
+            <v-progress-circular indeterminate size="64"></v-progress-circular>
+        </v-overlay>
 
         <EdgeTable v-bind:originaldata="original" />
     </div>
@@ -180,7 +227,7 @@
     const moment = extendMoment(Moment);
     import emails from "~/static/email_100.json";
     import clusters from "~/static/EmployeeRecords.json";
-    import saveSvgAsPng from 'save-svg-as-png'
+    import saveSvgAsPng from "save-svg-as-png";
 
     export default {
         components: {
@@ -196,6 +243,7 @@
         },
         data() {
             return {
+                overlay: false,
                 showSettings: false,
                 dates: [],
                 datePicker: {
@@ -213,6 +261,14 @@
                     textOffset: 8,
                     closeOnClick: true,
                     closeOnContentClick: false
+                },
+                tooltip: {
+                    showTooltip: false,
+                    top: 0,
+                    left: 0,
+                    text: "",
+                    outgoing: "",
+                    incoming: ""
                 },
                 records: "",
                 original: [],
@@ -251,13 +307,23 @@
             }
         },
         methods: {
-            saveSvg(){
-                saveSvgAsPng.saveSvgAsPng(this.$refs.diagram, "diagram.png", {scale: 2, backgroundColor: "#FFFFFF", excludeUnusedCss: true});
+            async saveSvg() {
+                this.overlay = true;
+                let getImage = await saveSvgAsPng.saveSvgAsPng(
+                    this.$refs.diagram,
+                    "diagram.png",
+                    {
+                        scale: 2,
+                        backgroundColor: "#FFFFFF",
+                        excludeUnusedCss: true
+                    }
+                );
+                this.overlay = false;
             },
             updateDialog(newValue) {
                 this.dialog = newValue;
             },
-            
+
             selectedItem(item) {
                 Array.prototype.push.apply(item.data.outgoing, item.data.incoming);
                 this.selectedData = item.data.outgoing;
@@ -315,7 +381,13 @@
                 // this.nodes = this.drawNodes();
             },
 
-            mouseOver(thisNode, lines) {
+            mouseOver(thisNode, event) {
+                this.tooltip.showTooltip = true;
+                this.tooltip.top = event.pageY - 30;
+                this.tooltip.left = event.pageX;
+                this.tooltip.text = thisNode.text;
+                this.tooltip.outgoing = thisNode.outgoing;
+                this.tooltip.incoming = thisNode.incoming;
                 this.nodes.map(d => {
                     d.target = d.source = false;
                 });
@@ -331,6 +403,8 @@
                 });
             },
             mouseLeave(thisNode) {
+                this.tooltip.showTooltip = false;
+
                 this.links.map(d => {
                     if (d.source.data == thisNode.data.data) {
                         d.source.source = false;
@@ -405,7 +479,6 @@
                         );
                     group.children.push(node);
                     node.targetIds = [];
-                    // You can do whatever the fuck you want to do!
                     node.outgoing = [];
                     node.incoming = [];
                 }
@@ -449,7 +522,6 @@
 
                 var root = this.cluster(d3.hierarchy(this.data));
                 this.nodes = root.leaves().map((d, i) => {
-                    // console.log(d.data.group);
                     let textAnchor = d.x < 180 ? "start" : "end";
                     // console.log(d.data.id);
                     let text = d.data.id;
@@ -465,6 +537,8 @@
                         id: i + 1,
                         dy: "0.28em",
                         text: text,
+                        outgoing: d.data.outgoing ? d.data.outgoing.length : "",
+                        incoming: d.data.incoming ? d.data.incoming.length : "",
                         textAnchor: textAnchor,
                         transform: transform,
                         data: d,
@@ -484,7 +558,6 @@
                             })
                         )
                     );
-
                     this.links = linkColors.map(d => {
                         d.source = d[0];
                         d.source.source = false;
@@ -497,6 +570,12 @@
             }
         },
         computed: {
+            tooltipStyle() {
+                return {
+                    top: this.tooltip.top + "px",
+                    left: this.tooltip.left + "px"
+                };
+            },
             getDates() {
                 return this.dates.join(" - ");
             },
@@ -572,11 +651,12 @@
 
 .node:hover {
     fill: #000;
+    cursor: pointer;
 }
 
 .link {
-    stroke: steelblue;
-    stroke-opacity: 0.4;
+    stroke: #1975d2;
+    stroke-opacity: 0.2;
     fill: none;
 }
 

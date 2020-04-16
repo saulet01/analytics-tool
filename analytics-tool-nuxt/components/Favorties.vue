@@ -2,9 +2,9 @@
     <div>
         <v-row align="center" justify="center">
             <v-col cols="8" class="text-center">
-                <h1 class="text-center mt-4" ref="capture">
+                <h1 class="text-center neutral-color mt-4" ref="capture">
                     Favorites
-                    <v-icon color="red">fas fa-heart</v-icon>
+                    <v-icon color="neutral" large>fas fa-heart</v-icon>
                 </h1>
             </v-col>
             <v-col cols="4" class="d-flex flex-row align-center">

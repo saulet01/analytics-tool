@@ -8,8 +8,7 @@
         <v-row align="center" justify="center">
             <v-col lg="10" md="9" cols="7" class="text-center">
                 <h1
-                    class="display-1 font-weight-bold"
-                    style="color:red;"
+                    class="display-1 font-weight-bold neutral-color"
                     :class="responsiveh1"
                 >Timeline Novelty Visualization</h1>
             </v-col>
@@ -22,7 +21,7 @@
                     close-icon="fas fa-heart"
                     to="#favorites"
                 >
-                    <v-avatar left color="red">{{ countFavorites }}</v-avatar>Favorites
+                    <v-avatar left color="neutral">{{ countFavorites }}</v-avatar>Favorites
                 </v-chip>
             </v-col>
         </v-row>
@@ -47,16 +46,8 @@
                             </v-col>
                         </v-row>
                     </v-card-title>
-                    <v-card-subtitle class="animated fadeIn">
-                        {{
-                        pickedData.date
-                        }}
-                    </v-card-subtitle>
-                    <v-card-text class="animated fadeIn">
-                        {{
-                        pickedData.description
-                        }}
-                    </v-card-text>
+                    <v-card-subtitle class="animated fadeIn">{{ pickedData.date }}</v-card-subtitle>
+                    <v-card-text class="animated fadeIn">{{ pickedData.description }}</v-card-text>
                 </v-card>
             </v-col>
             <v-col cols="12" lg="6" md="10">
@@ -94,6 +85,7 @@
     import WordCloud from "~/components/WordCloud";
     import Sentiment from "~/components/Sentiment";
     import Favorites from "~/components/Favorties";
+    import Moment from "moment";
     import * as d3 from "d3";
     import axios from "axios";
 
@@ -170,7 +162,7 @@
         methods: {
             updateText(event) {
                 this.pickedData = event;
-                // this.sendIBMRequest();
+                this.sendIBMRequest();
             },
             addFavorite(selected) {
                 this.favorites.push(selected);
@@ -266,11 +258,12 @@
                         padding: 50,
                         text: this.title
                     },
-                    breakpoints: {
-                        small: 576,
-                        medium: 768,
-                        large: 992,
-                        extra: 1200
+                    range: {
+                        start: new Date("2019/11/03 15:21:31"), // one year ago
+                        end: new Date("2020/02/03 15:21:31")
+                    },
+                    zoom: {
+                        minimumScale: 1
                     }
                 });
             },
@@ -315,12 +308,12 @@ circle:hover {
     transform: translate(-75px, -20px);
     font-weight: bold;
     font-size: 1.2em;
-    fill: #1976d2;
+    fill: #fe7d3b;
 }
 .end text {
     transform: translate(75px, -20px);
     font-weight: bold;
     font-size: 1.2em;
-    fill: #1976d2;
+    fill: #fe7d3b;
 }
 </style>
