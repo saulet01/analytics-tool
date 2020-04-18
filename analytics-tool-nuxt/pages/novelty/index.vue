@@ -27,27 +27,25 @@
         </v-row>
         <v-row justify="center">
             <v-col cols="12" lg="6" md="10">
-                <v-card height="430" elevation="4">
-                    <v-card-title class="justify-space-between animated fadeIn">
-                        <v-row>
-                            <v-col cols="12" md="8" lg="8">{{ pickedData.title }}</v-col>
-                            <v-col cols="12" md="4" lg="4">
-                                <v-btn
-                                    small
-                                    color="primary"
-                                    @click="addFavorite(pickedData)"
-                                    class="animated fadeIn elevation-5"
-                                    :style="toggled"
-                                    :disabled="checkSelected"
-                                >
-                                    Add to Favorites
-                                    <v-icon small right>fas fa-heart</v-icon>
-                                </v-btn>
-                            </v-col>
-                        </v-row>
-                    </v-card-title>
+                <v-btn
+                    block
+                    small
+                    color="primary"
+                    @click="addFavorite(pickedData)"
+                    class="animated fadeIn elevation-3 mb-2"
+                    :style="toggled"
+                    :disabled="checkSelected"
+                >
+                    Add to Favorites
+                    <v-icon small right>fas fa-heart</v-icon>
+                </v-btn>
+                <v-card :height="dynamicHeight" elevation="4" class="scroll">
+                    <v-card-title
+                        class="justify-space-between animated fadeIn"
+                    >{{ pickedData.title }}</v-card-title>
                     <v-card-subtitle class="animated fadeIn">{{ pickedData.date }}</v-card-subtitle>
-                    <v-card-text class="animated fadeIn">{{ pickedData.description }}</v-card-text>
+                    <v-card-text class="wrapper animated fadeIn">{{ pickedData.description }}</v-card-text>
+                    <v-card-actions>{{ pickedData.source | sourceGet}}</v-card-actions>
                 </v-card>
             </v-col>
             <v-col cols="12" lg="6" md="10">
@@ -87,7 +85,10 @@
     import Favorites from "~/components/Favorties";
     import Moment from "moment";
     import * as d3 from "d3";
+    import tests from "~/static/test.json";
+
     import axios from "axios";
+    import moment from "moment";
 
     export default {
         components: {
@@ -100,30 +101,7 @@
                 data: [
                     {
                         name: "admin-on-rest",
-                        data: [
-                            {
-                                date: new Date("2020/03/03 14:21:31"),
-                                title: "First Title",
-                                description: "This is a description"
-                            },
-                            {
-                                date: new Date("2019/10/03 15:21:31"),
-                                title:
-                                    "Lorem dolor sit amet, consectetur adipiscing elit. Pellentesque vel mi ut elit tempor aliquam eget eget enim. Proin cursus eleifend pretium. Aliquam cursus ",
-                                description:
-                                    "Lorem dolor sit amet, consectetur adipiscing elit. Pellentesque vel mi ut velit tempor aliquam eget eget enim. Proin cursus eleifend pretium. Aliquam cursus pellentesque interdum. Vivamus placerat id leo a pellentesque. Vivamus a congue urna, sed porta eros. Etiam finibus magna et est aliquam, sed semper libero facilisis.  Donec lectus lorem, rhoncus vitae quam eget, vulputate gravida elit. Praesent ultricies eros id velit condimentum, eu ultrices nisl consequat."
-                            },
-                            {
-                                date: new Date("2019/11/03 15:21:31"),
-                                title: "Fourth Title",
-                                description: "This is a description"
-                            },
-                            {
-                                date: new Date("2019/12/03 15:21:31"),
-                                title: "Fifth Title",
-                                description: "This is a description"
-                            }
-                        ]
+                        data: []
                     },
                     {
                         name: "whatsapp",
@@ -149,17 +127,42 @@
                     title: "",
                     date: "",
                     description: ""
-                },
-                stupidData:
-                    "Under the IBM Board Corporate Governance Guidelines, the Directors and Corporate Governance Committee and the full Board annually review the financial and other relationships between the independent directors and IBM as part of the assessment of director independence. The Directors and Corporate Governance Committee makes recommendations to the Board about the independence of non-management directors, and the Board determines whether those directors are independent. In addition to this annual assessment of director independence, independence is monitored by the Directors and Corporate Governance Committee and the full Board on an ongoing basis."
+                }
             };
         },
         mounted() {
+            this.data[0].data = this.formatData();
+
+            // this.data[0].data = tests;
             d3.select("#event-chart")
                 .data([this.data])
                 .call(this.getChart);
         },
+        filters: {
+            sourceGet(newValue) {
+                return newValue ? "Source: " + newValue : "";
+            }
+        },
         methods: {
+            formatData() {
+                let stringOfDates = tests.map(d => {
+                    return moment(d.date, "DD MMMM YYYY");
+                });
+                this.startDate = moment.min(stringOfDates);
+                console.log(stringOfDates);
+                this.endDate = moment.max(stringOfDates).toDate();
+                console.log(this.startDate);
+                let temporalData = tests.map(d => {
+                    return {
+                        source: d.source,
+                        title: d.title,
+                        date: moment(d.date),
+                        description: d.description
+                    };
+                });
+
+                return temporalData;
+            },
             updateText(event) {
                 this.pickedData = event;
                 this.sendIBMRequest();
@@ -172,13 +175,16 @@
                 // console.log(message);
             },
             sendIBMRequest() {
+                let analyzeText =
+                    this.pickedData.title + ". " + this.pickedData.description;
                 this.isLoading = true;
-
+                // let localhost = "localhost:3000";
+                let heroku = "analytics-tool.herokuapp.com";
                 return axios({
-                    url: "http://localhost:3000/api/ibm-nlu",
+                    url: `http://${heroku}/api/ibm-nlu`,
                     method: "post",
                     data: {
-                        text: this.stupidData
+                        text: analyzeText
                     }
                 })
                     .then(res => {
@@ -213,6 +219,9 @@
             }
         },
         computed: {
+            dynamicHeight() {
+                return this.pickedData.title ? 390 : 430;
+            },
             tooltipTitle() {
                 return this.tooltip.title.length > 60
                     ? this.tooltip.title.slice(0, 60) + "...."
@@ -259,8 +268,8 @@
                         text: this.title
                     },
                     range: {
-                        start: new Date("2019/11/03 15:21:31"), // one year ago
-                        end: new Date("2020/02/03 15:21:31")
+                        start: this.startDate,
+                        end: this.endDate
                     },
                     zoom: {
                         minimumScale: 1
@@ -292,6 +301,10 @@
 </script>
 
 <style>
+.scroll {
+    overflow-y: auto;
+}
+
 circle:hover {
     fill: tomato;
 }
@@ -315,5 +328,8 @@ circle:hover {
     font-weight: bold;
     font-size: 1.2em;
     fill: #fe7d3b;
+}
+.wrapper {
+    white-space: pre-wrap;
 }
 </style>

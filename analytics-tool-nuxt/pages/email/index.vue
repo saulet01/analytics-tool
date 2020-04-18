@@ -37,7 +37,7 @@
                 </v-menu>
             </v-col>
             <v-col cols="3">
-                <p>Total Email: {{ original.length }}</p>
+                <p class="title neutral-color">Total Email: {{ original.length }}</p>
             </v-col>
         </v-row>
         <v-row>

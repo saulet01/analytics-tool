@@ -61,7 +61,7 @@
                                     </v-row>
                                 </v-card-title>
 
-                                <v-card-subtitle>{{ timeline.date }}</v-card-subtitle>
+                                <v-card-subtitle>{{ timeline.date | formatDate }}</v-card-subtitle>
                                 <v-card-text>{{ timeline.description }}</v-card-text>
                             </v-card>
                         </v-timeline-item>
@@ -77,7 +77,7 @@
 </template>
 
 <script>
-    import Moment from "moment";
+    import moment from "moment";
     import SaveAsImage from "~/components/SaveAsImage";
 
     export default {
@@ -95,11 +95,17 @@
                 page: 1,
                 perPage: "4",
                 divStyle: {
-                    backgroundImage: `url(${require("~/assets/images/2.png")})`
+                    backgroundImage: `url(${require("~/assets/images/2_40.png")})`
                 },
                 items: ["2", "4", "6", "8", "10"],
                 sortedArray: []
             };
+        },
+
+        filters: {
+            formatDate(newValue) {
+                return moment(newValue).format("DD MMM, YYYY h:mm");
+            }
         },
 
         computed: {

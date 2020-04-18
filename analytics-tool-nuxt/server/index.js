@@ -38,7 +38,6 @@ async function start() {
 
   // Express GET endpoint
   app.post('/api/ibm-nlu', async (req, res) => {
-    console.log(req.body.text);
 
     const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
       version: '2019-07-12',

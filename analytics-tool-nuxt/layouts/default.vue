@@ -3,7 +3,7 @@
         <v-app-bar app color="primary" dark>
             <v-row align="center">
                 <v-col md="8" lg="9" cols="8">
-                    <p class="mt-4" :class="responsiveText">VAST Challenge 2014</p>
+                    <v-img :src="getImageVast" transition="scale-transition" width="200"></v-img>
                 </v-col>
                 <v-col lg="3" md="4" cols="6" class="hidden-md-and-down">
                     <v-btn
@@ -53,19 +53,18 @@
 
 <script>
     export default {
-        computed: {
-            responsiveText() {
-                return {
-                    "body-1": this.$vuetify.breakpoint.mdAndDown,
-                    headline: this.$vuetify.breakpoint.mdAndUp
-                };
-            }
-        },
+        computed: {},
 
         data: () => ({
+            getImageVast: require("~/assets/images/vast.png"),
             drawer: false,
             collapseOnScroll: true,
             menuItems: [
+                {
+                    title: "Home",
+                    link: "/",
+                    icon: "home"
+                },
                 {
                     title: "Timeline Novelty",
                     link: "/novelty",
