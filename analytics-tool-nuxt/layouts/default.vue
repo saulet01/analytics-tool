@@ -3,7 +3,9 @@
         <v-app-bar app color="primary" dark>
             <v-row align="center">
                 <v-col md="8" lg="9" cols="8">
-                    <v-img :src="getImageVast" transition="scale-transition" width="200"></v-img>
+                    <router-link to="/" style="cursor: pointer">
+                        <v-img :src="getImageVast" transition="scale-transition" width="200"></v-img>
+                    </router-link>
                 </v-col>
                 <v-col lg="3" md="4" cols="6" class="hidden-md-and-down">
                     <v-btn

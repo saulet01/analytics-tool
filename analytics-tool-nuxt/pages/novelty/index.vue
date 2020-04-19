@@ -25,6 +25,33 @@
                 </v-chip>
             </v-col>
         </v-row>
+
+        <v-row align="center" justify="center">
+            <v-col cols="10">
+                <v-file-input
+                    show-size
+                    small-chips
+                    accept="json/*"
+                    label="Load a file in .json or .csv format"
+                    @change="fileHandle"
+                ></v-file-input>
+            </v-col>
+            <v-col cols="2">
+                <v-btn color="neutral" dark @click="loadTest">Load Test</v-btn>
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col cols="12">
+                <div id="event-chart" class="elevation-5 pt-10" style="min-height: 150px;">
+                    <v-slide-x-transition>
+                        <h1
+                            class="text-center primary-color"
+                            v-show="data[0].data.length == 0"
+                        >Upload Data or Click "LOAD TEST" to display events</h1>
+                    </v-slide-x-transition>
+                </div>
+            </v-col>
+        </v-row>
         <v-row justify="center">
             <v-col cols="12" lg="6" md="10">
                 <v-btn
@@ -53,11 +80,7 @@
                 <WordCloud :isLoading="isLoading" :keywords="keywords" />
             </v-col>
         </v-row>
-        <v-row>
-            <v-col cols="12">
-                <div id="event-chart" class="elevation-5 pt-10"></div>
-            </v-col>
-        </v-row>
+
         <v-row>
             <v-col>
                 <v-card
@@ -74,6 +97,9 @@
             </v-col>
         </v-row>
         <Favorites id="favorites" :timelines="favorites" @sendToParent="messageFromFavorite" />
+        <v-overlay :value="loadingFile" color="primary">
+            <v-progress-circular indeterminate size="64"></v-progress-circular>
+        </v-overlay>
     </v-container>
 </template>
 
@@ -108,6 +134,7 @@
                         data: []
                     }
                 ],
+
                 isLoading: false,
                 radius: 10,
                 pickedData: {},
@@ -127,16 +154,12 @@
                     title: "",
                     date: "",
                     description: ""
-                }
+                },
+                loadingFile: false
             };
         },
         mounted() {
-            this.data[0].data = this.formatData();
-
-            // this.data[0].data = tests;
-            d3.select("#event-chart")
-                .data([this.data])
-                .call(this.getChart);
+            // this.data[0].data = this.formatData();
         },
         filters: {
             sourceGet(newValue) {
@@ -144,7 +167,31 @@
             }
         },
         methods: {
-            formatData() {
+            loadTest() {
+                this.loadingFile = true;
+                this.data[0].data = this.formatData(tests);
+                this.drawEvents();
+            },
+            drawEvents() {
+                d3.select("#event-chart")
+                    .data([this.data])
+                    .call(this.getChart);
+                this.loadingFile = false;
+            },
+            fileHandle(event) {
+                if (event != undefined) {
+                    this.loadingFile = true;
+                    var reader = new FileReader();
+                    reader.readAsText(event);
+                    reader.onload = () => {
+                        let temporary = reader.result;
+                        let temporaryJSON = JSON.parse(temporary);
+                        this.data[0].data = this.formatData(temporaryJSON);
+                        this.drawEvents();
+                    };
+                }
+            },
+            formatData(tests) {
                 let stringOfDates = tests.map(d => {
                     return moment(d.date, "DD MMMM YYYY");
                 });
@@ -165,7 +212,7 @@
             },
             updateText(event) {
                 this.pickedData = event;
-                this.sendIBMRequest();
+                // this.sendIBMRequest();
             },
             addFavorite(selected) {
                 this.favorites.push(selected);
@@ -179,9 +226,10 @@
                     this.pickedData.title + ". " + this.pickedData.description;
                 this.isLoading = true;
                 // let localhost = "localhost:3000";
-                let heroku = "analytics-tool.herokuapp.com";
+                let heroku = "https://analytics-tool.herokuapp.com/api/ibm-nlu";
+                let localhost = "http://localhost:3000/api/ibm-nlu";
                 return axios({
-                    url: `http://${heroku}/api/ibm-nlu`,
+                    url: localhost,
                     method: "post",
                     data: {
                         text: analyzeText
