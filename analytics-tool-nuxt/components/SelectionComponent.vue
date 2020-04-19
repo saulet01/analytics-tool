@@ -1,19 +1,20 @@
 <template>
     <v-card class="mx-auto mt-6" elevation="2" height="620">
-        <v-card-title class="headline">
-            Selection:
-            <v-spacer></v-spacer>
-            <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line></v-text-field>
-            <v-btn
-                class="ml-4"
-                small
-                fab
-                color="primary"
-                v-show="selectedemail.length > 0"
-                @click.stop="dialog = true"
-            >
-                <v-icon small>fas fa-expand-arrows-alt</v-icon>
-            </v-btn>
+        <v-card-title class="flex-column d-flex align-baseline">
+            {{getName}}
+            <div class="d-flex flex-row align-center">
+                <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line></v-text-field>
+                <v-btn
+                    class="ml-4"
+                    small
+                    fab
+                    color="primary"
+                    v-show="selectedemail.length > 0"
+                    @click.stop="dialog = true"
+                >
+                    <v-icon small>fas fa-expand-arrows-alt</v-icon>
+                </v-btn>
+            </div>
         </v-card-title>
         <v-card-text>
             <v-data-table
@@ -118,9 +119,17 @@
                 headers: [],
                 search: "",
                 active: true,
-                dialog: false
+                dialog: false,
+                selectedName: ""
             };
         },
+
+        computed: {
+            getName() {
+                return this.selectedName ? this.selectedName : "Selection: ";
+            }
+        },
+
         methods: {
             getColor(item) {
                 if (item === "Received") {
@@ -128,14 +137,12 @@
                 } else {
                     return "green";
                 }
-                // if (calories > 400) return "red";
-                // else if (calories > 200) return "orange";
-                // else return "green";
             }
         },
         watch: {
             selectedemail() {
                 var nodes = Object.keys(this.selectedemail[0]);
+                this.selectedName = this.selectedemail[0].from;
                 var links = nodes.map(function(d) {
                     return {
                         text: d,

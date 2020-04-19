@@ -76,14 +76,16 @@
                                             @mouseover="mouseOver(d, $event)"
                                             @mouseout="mouseLeave(d)"
                                             @click="selectedItem(d.data)"
-                                        >{{ d.text | splitItem }}</text>
+                                        >{{ d.text | splitItem(switchExtensions) }}</text>
                                     </g>
                                 </g>
                                 <g>
-                                    <!-- <text
-                                            v-for="(item, index) in getNodes.fill"
-                                            :key="index +'A'"
-                                    >{{ item }}</text>-->
+                                    <text
+                                        v-for="(item, index) in uniqueClusters"
+                                        :style="{fill: item.fill, fontSize: '11px'}"
+                                        :dy="(index + 1) * 25"
+                                        x="10"
+                                    >{{ item.group }}</text>
                                 </g>
                             </svg>
                         </div>
@@ -91,104 +93,111 @@
                 </v-card>
             </v-col>
             <v-col lg="5" md="5" sm="12" cols="12">
-                <v-menu
-                    offset-y
-                    :close-on-click="chartStyling.closeOnClick"
-                    :close-on-content-click="chartStyling.closeOnContentClick"
-                    transition="slide-y-transition"
-                    nudge-bottom="10"
-                    v-model="showSettings"
-                >
-                    <template v-slot:activator="{ on }">
-                        <v-btn
-                            width="200"
-                            v-on="on"
-                            dark
-                            color="primary"
-                            @click="showSettings = true"
-                        >
-                            Settings
-                            <v-icon small class="ml-2">fas fa-cog</v-icon>
-                        </v-btn>
-                    </template>
-                    <v-card width="500">
-                        <v-card-text>
-                            <div class="d-flex">
-                                <v-subheader
-                                    class="pl-0 font-weight-bold"
-                                    style="width:7em;"
-                                >Diameter:</v-subheader>
-                                <v-slider
-                                    v-model="updateDiameter"
-                                    class="mt-2"
-                                    max="900"
-                                    min="600"
-                                    :size="chartStyling.diameter"
-                                    thumb-label
-                                    color="primary"
-                                    track-color="#BDBDBD"
-                                ></v-slider>
-                            </div>
-                            <div class="d-flex mt-n4">
-                                <v-subheader
-                                    class="pl-0 font-weight-bold"
-                                    style="width:7em;"
-                                >Tension:</v-subheader>
-                                <v-slider
-                                    v-model="getTension"
-                                    max="10"
-                                    min="1"
-                                    :size="chartStyling.diameter"
-                                    thumb-label
-                                    class="mt-2"
-                                    color="primary"
-                                    track-color="#BDBDBD"
-                                ></v-slider>
-                            </div>
-                            <div class="d-flex mt-n4">
-                                <v-subheader
-                                    class="pl-0 font-weight-bold"
-                                    style="width:7em;"
-                                >Text Offset:</v-subheader>
-                                <v-slider
-                                    v-model="chartStyling.textOffset"
-                                    max="15"
-                                    min="4"
-                                    :size="chartStyling.diameter"
-                                    thumb-label
-                                    class="mt-2"
-                                    color="primary"
-                                    track-color="#BDBDBD"
-                                ></v-slider>
-                            </div>
-                            <div class="d-flex mt-n4">
-                                <v-subheader
-                                    class="pl-0 font-weight-bold"
-                                    style="width:7em;"
-                                >Text Size:</v-subheader>
-                                <v-slider
-                                    v-model="chartStyling.fontSize"
-                                    max="12"
-                                    min="8"
-                                    :size="chartStyling.diameter"
-                                    thumb-label
-                                    class="mt-2"
-                                    color="primary"
-                                    track-color="#BDBDBD"
-                                ></v-slider>
-                            </div>
-                            <v-btn small color="alt" dark @click="showSettings = false">
-                                Close
-                                <v-icon small class="ml-2">fas fa-times</v-icon>
-                            </v-btn>
-                        </v-card-text>
-                    </v-card>
-                </v-menu>
+                <v-card>
+                    <v-card-text class="d-flex flex-row justify-center align-center">
+                        <v-switch v-model="switchExtensions" label="Display Email Domain"></v-switch>
 
-                <v-btn width="200" color="neutral" dark @click="saveSvg">
-                    Save Image
-                    <v-icon small class="ml-2">fas fa-save</v-icon>
-                </v-btn>
+                        <v-menu
+                            offset-y
+                            :close-on-click="chartStyling.closeOnClick"
+                            :close-on-content-click="chartStyling.closeOnContentClick"
+                            transition="slide-y-transition"
+                            nudge-bottom="10"
+                            v-model="showSettings"
+                        >
+                            <template v-slot:activator="{ on }">
+                                <v-btn
+                                    width="150"
+                                    v-on="on"
+                                    dark
+                                    color="primary"
+                                    @click="showSettings = true"
+                                    class="mx-2"
+                                >
+                                    Settings
+                                    <v-icon small class="ml-2">fas fa-cog</v-icon>
+                                </v-btn>
+                            </template>
+                            <v-card width="500">
+                                <v-card-text>
+                                    <div class="d-flex">
+                                        <v-subheader
+                                            class="pl-0 font-weight-bold"
+                                            style="width:7em;"
+                                        >Diameter:</v-subheader>
+                                        <v-slider
+                                            v-model="updateDiameter"
+                                            class="mt-2"
+                                            max="900"
+                                            min="600"
+                                            :size="chartStyling.diameter"
+                                            thumb-label
+                                            color="primary"
+                                            track-color="#BDBDBD"
+                                        ></v-slider>
+                                    </div>
+                                    <div class="d-flex mt-n4">
+                                        <v-subheader
+                                            class="pl-0 font-weight-bold"
+                                            style="width:7em;"
+                                        >Tension:</v-subheader>
+                                        <v-slider
+                                            v-model="getTension"
+                                            max="10"
+                                            min="1"
+                                            :size="chartStyling.diameter"
+                                            thumb-label
+                                            class="mt-2"
+                                            color="primary"
+                                            track-color="#BDBDBD"
+                                        ></v-slider>
+                                    </div>
+                                    <div class="d-flex mt-n4">
+                                        <v-subheader
+                                            class="pl-0 font-weight-bold"
+                                            style="width:7em;"
+                                        >Text Offset:</v-subheader>
+                                        <v-slider
+                                            v-model="chartStyling.textOffset"
+                                            max="15"
+                                            min="4"
+                                            :size="chartStyling.diameter"
+                                            thumb-label
+                                            class="mt-2"
+                                            color="primary"
+                                            track-color="#BDBDBD"
+                                        ></v-slider>
+                                    </div>
+                                    <div class="d-flex mt-n4">
+                                        <v-subheader
+                                            class="pl-0 font-weight-bold"
+                                            style="width:7em;"
+                                        >Text Size:</v-subheader>
+                                        <v-slider
+                                            v-model="chartStyling.fontSize"
+                                            max="12"
+                                            min="8"
+                                            :size="chartStyling.diameter"
+                                            thumb-label
+                                            class="mt-2"
+                                            color="primary"
+                                            track-color="#BDBDBD"
+                                        ></v-slider>
+                                    </div>
+                                    <v-btn small color="alt" dark @click="showSettings = false">
+                                        Close
+                                        <v-icon small class="ml-2">fas fa-times</v-icon>
+                                    </v-btn>
+                                </v-card-text>
+                            </v-card>
+                        </v-menu>
+
+                        <v-btn width="150" color="neutral" dark @click="saveSvg">
+                            Save Image
+                            <v-icon small class="ml-2">fas fa-save</v-icon>
+                        </v-btn>
+                    </v-card-text>
+                </v-card>
 
                 <SelectionComponent :selectedemail="selectedData" />
             </v-col>
@@ -236,14 +245,18 @@
         },
 
         filters: {
-            splitItem(value) {
-                // return value.split("@")[0];
-                return (value || "").split("@")[0];
+            splitItem(value, extensions) {
+                return extensions ? value || "" : (value || "").split("@")[0];
+            },
+            clustered(value) {
+                return;
             }
         },
         data() {
             return {
+                uniqueClusters: [],
                 overlay: false,
+                switchExtensions: false,
                 showSettings: false,
                 dates: [],
                 datePicker: {
@@ -320,6 +333,7 @@
                 );
                 this.overlay = false;
             },
+
             updateDialog(newValue) {
                 this.dialog = newValue;
             },
@@ -518,7 +532,6 @@
             },
             drawNodes() {
                 var colorScale = d3.scaleOrdinal(d3.schemeCategory10);
-                // console.log(colorScale);
 
                 var root = this.cluster(d3.hierarchy(this.data));
                 this.nodes = root.leaves().map((d, i) => {
@@ -542,9 +555,16 @@
                         textAnchor: textAnchor,
                         transform: transform,
                         data: d,
-                        fill: colorScale(d.data.group)
+                        fill: colorScale(d.data.group),
+                        group: d.data.group
                     };
                 });
+
+                this.uniqueClusters = [
+                    ...new Map(
+                        this.nodes.map(item => [item["group"], item])
+                    ).values()
+                ];
                 return this.nodes;
             },
             drawLinks() {
