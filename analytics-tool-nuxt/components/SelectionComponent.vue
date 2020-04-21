@@ -165,7 +165,6 @@
                     };
                 });
                 this.headers = links;
-                console.log(links);
             }
         }
     };

@@ -183,7 +183,6 @@
 
 <script>
     import eventDrops from "event-drops";
-    import LineChart from "~/components/LineChart.vue";
     import WordCloud from "~/components/WordCloud";
     import Sentiment from "~/components/Sentiment";
     import Favorites from "~/components/Favorties";

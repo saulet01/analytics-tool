@@ -254,6 +254,7 @@
         },
         data() {
             return {
+                currentUser: "",
                 uniqueClusters: [],
                 overlay: false,
                 switchExtensions: false,
@@ -284,6 +285,7 @@
                     incoming: ""
                 },
                 records: "",
+                previousNode: {},
                 original: [],
                 links: [],
                 nodes: [],
@@ -339,6 +341,7 @@
             },
 
             selectedItem(item) {
+                this.currentUser = item.data.id;
                 Array.prototype.push.apply(item.data.outgoing, item.data.incoming);
                 this.selectedData = item.data.outgoing;
             },
@@ -402,9 +405,24 @@
                 this.tooltip.text = thisNode.text;
                 this.tooltip.outgoing = thisNode.outgoing;
                 this.tooltip.incoming = thisNode.incoming;
+
                 this.nodes.map(d => {
                     d.target = d.source = false;
                 });
+
+                if (
+                    this.previousNode != thisNode &&
+                    Object.keys(this.previousNode).length > 0
+                ) {
+                    this.links.map(d => {
+                        if (d.source.data == this.previousNode.data.data) {
+                            d.source.source = false;
+                        }
+                        if (d.target.data == this.previousNode.data.data) {
+                            d.target.target = false;
+                        }
+                    });
+                }
 
                 this.links.map(d => {
                     if (d.source.data == thisNode.data.data) {
@@ -419,14 +437,19 @@
             mouseLeave(thisNode) {
                 this.tooltip.showTooltip = false;
 
-                this.links.map(d => {
-                    if (d.source.data == thisNode.data.data) {
-                        d.source.source = false;
-                    }
-                    if (d.target.data == thisNode.data.data) {
-                        d.target.target = false;
-                    }
-                });
+                if (thisNode.text == this.currentUser) {
+                    this.previousNode = thisNode;
+                    return;
+                } else {
+                    this.links.map(d => {
+                        if (d.source.data == thisNode.data.data) {
+                            d.source.source = false;
+                        }
+                        if (d.target.data == thisNode.data.data) {
+                            d.target.target = false;
+                        }
+                    });
+                }
             },
             formatData(data, records) {
                 records = records.map(d => {
