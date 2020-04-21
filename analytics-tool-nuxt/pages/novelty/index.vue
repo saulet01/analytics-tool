@@ -6,11 +6,14 @@
             <v-btn color="error" small @click="snackbar = false">Close</v-btn>
         </v-snackbar>
         <v-row align="center" justify="center">
-            <v-col lg="10" md="9" cols="7" class="text-center">
+            <v-col lg="8" md="6" cols="4" class="text-center">
                 <h1
                     class="display-1 font-weight-bold neutral-color"
                     :class="responsiveh1"
                 >Timeline Novelty Visualization</h1>
+            </v-col>
+            <v-col lg="2" md="3" cols="3">
+                <h1 class="title neutral-color">Events Count:</h1>
             </v-col>
             <v-col lg="2" md="3" cols="5">
                 <v-chip
@@ -27,17 +30,92 @@
         </v-row>
 
         <v-row align="center" justify="center">
-            <v-col cols="10">
-                <v-file-input
-                    show-size
-                    small-chips
-                    accept="json/*"
-                    label="Load a file in .json or .csv format"
-                    @change="fileHandle"
-                ></v-file-input>
-            </v-col>
-            <v-col cols="2">
-                <v-btn color="neutral" dark @click="loadTest">Load Test</v-btn>
+            <v-col cols="9">
+                <v-stepper v-model="e1" v-show="removeStepper">
+                    <v-stepper-header>
+                        <v-stepper-step :complete="e1 > 1" step="1">Data Formatting</v-stepper-step>
+
+                        <v-divider></v-divider>
+
+                        <v-stepper-step :complete="e1 > 2" step="2">Data Upload</v-stepper-step>
+                    </v-stepper-header>
+
+                    <v-stepper-items>
+                        <v-stepper-content step="1">
+                            <v-card flat class="mb-3">
+                                <v-card-title class="neutral-color">Data Format</v-card-title>
+                                <v-card-text class="d-flex flex-row justify-space-between">
+                                    <div>
+                                        <p class="title primary-color">.json</p>
+                                        <pre class="d-flex justify-space-between">
+                                    <code style="background-color: #fff;">
+            [
+                {
+                    "title": "Sample Title",
+                    "description": "Sample Description",
+                    "date": "01/01/2017 00:00:00"
+                },
+                {
+                    ...
+                }
+            ]
+                                    </code>
+                                </pre>
+                                    </div>
+                                    <div>
+                                        <p class="title primary-color">.csv</p>
+                                        <v-simple-table dense>
+                                            <template v-slot:default>
+                                                <thead>
+                                                    <tr>
+                                                        <th class="text-left">title</th>
+                                                        <th class="text-left">description</th>
+                                                        <th class="text-left">date</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Sample Title</td>
+                                                        <td>Sample Description</td>
+                                                        <td>01/01/2017 00:00:00</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>...</td>
+                                                        <td>...</td>
+                                                        <td>...</td>
+                                                    </tr>
+                                                </tbody>
+                                            </template>
+                                        </v-simple-table>
+                                    </div>
+                                </v-card-text>
+                            </v-card>
+
+                            <v-btn color="primary" @click="e1 = 2">Continue</v-btn>
+                            <v-btn color="neutral" dark @click="loadTest">Load Test</v-btn>
+                            <v-btn text>Cancel</v-btn>
+                        </v-stepper-content>
+
+                        <v-stepper-content step="2">
+                            <v-card class="mb-12" color="lighten-1" height="100px" flat>
+                                <v-card-title
+                                    class="neutral-color"
+                                >Load a file in .json or .csv format</v-card-title>
+                                <v-card-text>
+                                    <v-file-input
+                                        show-size
+                                        small-chips
+                                        accept=".json, .csv"
+                                        label="Load a file in .json or .csv format"
+                                        @change="fileHandle"
+                                    ></v-file-input>
+                                </v-card-text>
+                            </v-card>
+
+                            <v-btn text @click="e1=1">Cancel</v-btn>
+                        </v-stepper-content>
+                    </v-stepper-items>
+                </v-stepper>
             </v-col>
         </v-row>
         <v-row>
@@ -105,7 +183,7 @@
 
 <script>
     import eventDrops from "event-drops";
-
+    import LineChart from "~/components/LineChart.vue";
     import WordCloud from "~/components/WordCloud";
     import Sentiment from "~/components/Sentiment";
     import Favorites from "~/components/Favorties";
@@ -134,7 +212,8 @@
                         data: []
                     }
                 ],
-
+                e1: 1,
+                removeStepper: true,
                 isLoading: false,
                 radius: 10,
                 pickedData: {},
@@ -188,6 +267,7 @@
                         let temporaryJSON = JSON.parse(temporary);
                         this.data[0].data = this.formatData(temporaryJSON);
                         this.drawEvents();
+                        this.removeStepper = false;
                     };
                 }
             },
@@ -267,6 +347,18 @@
             }
         },
         computed: {
+            returnJSON() {
+                var obj = {
+                    prop_1: {
+                        prop_11: "val_11",
+                        prop_12: "val_12"
+                    },
+                    prop_2: "val_2",
+                    prop_3: "val_3"
+                };
+
+                return JSON.stringify(obj);
+            },
             dynamicHeight() {
                 return this.pickedData.title ? 390 : 430;
             },

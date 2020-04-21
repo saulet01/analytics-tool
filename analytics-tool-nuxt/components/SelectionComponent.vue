@@ -1,8 +1,8 @@
 <template>
-    <v-card class="mx-auto mt-6" elevation="2" height="620">
-        <v-card-title class="flex-column d-flex align-baseline">
+    <v-card class="mx-auto mt-6" elevation="2" height="590">
+        <v-card-title class="flex-column d-flex align-baseline neutral-color">
             {{getName}}
-            <div class="d-flex flex-row align-center">
+            <div class="d-flex mt-n2 flex-row align-center justify-space-between">
                 <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line></v-text-field>
                 <v-btn
                     class="ml-4"
@@ -22,16 +22,19 @@
                 :items="selectedemail"
                 :search="search"
                 dense
-                height="450"
+                height="420"
+                class="mt-n5 data-table"
+                @change="goTo"
+                :fixed-header="fixedHeader"
             >
                 <template v-slot:item.state="{ item }">
-                    <v-chip :color="getColor(item.state)" small dark>{{ item.state }}</v-chip>
+                    <v-chip class="mr-n1" :color="getColor(item.state)" small dark>{{ item.state }}</v-chip>
                 </template>
                 <template v-slot:item.to="{ item }" v-slot:activator>
                     <v-list-item
                         v-for="(email, index) in item.to"
                         :key="index"
-                        :class="index == 0 ? 'mt-n4' : 'mt-n6'"
+                        :class="index == 0? 'mt-n4' : 'mt-n6'"
                     >
                         <v-list-item-content>
                             <v-list-item-subtitle style="font-size: 0.8em;" class="pa-0">{{ email }}</v-list-item-subtitle>
@@ -54,7 +57,7 @@
         <v-dialog v-model="dialog" width="100%">
             <v-card>
                 <v-card-title>
-                    Selection:
+                    {{getName}}
                     <v-spacer></v-spacer>
                     <v-text-field
                         v-model="search"
@@ -71,6 +74,7 @@
                         dense
                         height="450"
                         calculate-widths
+                        :fixed-header="fixedHeader"
                     >
                         <template v-slot:item.state="{ item }">
                             <v-chip :color="getColor(item.state)" small dark>{{ item.state }}</v-chip>
@@ -120,7 +124,8 @@
                 search: "",
                 active: true,
                 dialog: false,
-                selectedName: ""
+                selectedName: "",
+                fixedHeader: true
             };
         },
 
@@ -137,10 +142,20 @@
                 } else {
                     return "green";
                 }
+            },
+            goTo() {
+                this.$vuetify.goTo(".data-table tbody tr", {
+                    offset: 50,
+                    container: ".v-data-table__wrapper"
+                });
             }
         },
         watch: {
             selectedemail() {
+                this.$vuetify.goTo(".data-table tbody tr", {
+                    offset: 50,
+                    container: ".v-data-table__wrapper"
+                });
                 var nodes = Object.keys(this.selectedemail[0]);
                 this.selectedName = this.selectedemail[0].from;
                 var links = nodes.map(function(d) {
@@ -157,7 +172,7 @@
 </script>
 
 <style>
-td {
+/* td {
     width: 30px;
-}
+} */
 </style>

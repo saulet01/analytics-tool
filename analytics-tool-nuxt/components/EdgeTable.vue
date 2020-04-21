@@ -18,6 +18,7 @@
                     :headers="headers"
                     :items="originaldata"
                     class="elevation-1"
+                    :fixed-header="fixedHeader"
                 ></v-data-table>
             </v-card>
         </v-col>
@@ -35,7 +36,8 @@
         data() {
             return {
                 search: "",
-                headers: []
+                headers: [],
+                fixedHeader: true
             };
         },
         watch: {
