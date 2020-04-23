@@ -1,5 +1,5 @@
 <template>
-    <v-card flat class="mb-3">
+    <v-card flat>
         <v-card-title class="neutral-color">Data Format</v-card-title>
         <v-card-text class="d-flex flex-row justify-space-between">
             <div>
@@ -46,11 +46,22 @@
                 </v-simple-table>
             </div>
         </v-card-text>
+        <v-card-actions>
+            <v-btn color="neutral" @click="closeModal" dark>Close</v-btn>
+        </v-card-actions>
     </v-card>
 </template>
 
 <script>
-    export default {};
+    export default {
+        props: ["modalData"],
+        methods: {
+            closeModal() {
+                let modalState = false;
+                this.$emit("returnValue", modalState);
+            }
+        }
+    };
 </script>
 
 <style>

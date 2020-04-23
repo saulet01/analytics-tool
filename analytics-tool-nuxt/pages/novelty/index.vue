@@ -30,20 +30,21 @@
         </v-row>
 
         <v-row align="center" justify="center">
-            <v-col cols="8">
+            <v-col cols="7">
                 <v-file-input
                     show-size
                     small-chips
-                    accept=".json, .csv"
+                    accept=".json, .csv, .txt"
                     label="Load a file in .json or .csv format"
                     @change="fileHandle"
                 ></v-file-input>
             </v-col>
-            <v-col cols="2">
-                <v-btn color="neutral" dark @click="loadTest">Data Test</v-btn>
-            </v-col>
-            <v-col cols="2">
-                <v-btn color="primary" dark>Data Format</v-btn>
+            <v-col cols="4" class="d-flex justify-center">
+                <v-btn color="neutral" class="mx-2" dark @click="loadTest">Data Test</v-btn>
+                <v-btn color="primary" dark @click.stop="sampleModal = true">Data Format</v-btn>
+                <v-dialog v-model="sampleModal" width="950">
+                    <SampleData :modalData="sampleModal" @returnValue="sampleUploadModal" />
+                </v-dialog>
             </v-col>
         </v-row>
         <v-row>
@@ -117,7 +118,7 @@
     import Moment from "moment";
     import * as d3 from "d3";
     import tests from "~/static/test.json";
-
+    import SampleData from "~/components/DataSample";
     import axios from "axios";
     import moment from "moment";
 
@@ -125,7 +126,8 @@
         components: {
             WordCloud,
             Sentiment,
-            Favorites
+            Favorites,
+            SampleData
         },
         data() {
             return {
@@ -139,7 +141,7 @@
                         data: []
                     }
                 ],
-
+                sampleModal: false,
                 isLoading: false,
                 radius: 10,
                 pickedData: {},
@@ -189,11 +191,27 @@
                     var reader = new FileReader();
                     reader.readAsText(event);
                     reader.onload = () => {
-                        let temporary = reader.result;
-                        let temporaryJSON = JSON.parse(temporary);
-                        this.data[0].data = this.formatData(temporaryJSON);
+                        let returnFormat = this.handleFormat(
+                            event.type,
+                            reader.result
+                        );
+                        this.data[0].data = this.formatData(returnFormat);
                         this.drawEvents();
                     };
+                }
+            },
+            handleFormat(format, file) {
+                if (format == "application/json") {
+                    let temporaryJSON = JSON.parse(file);
+                    return temporaryJSON;
+                } else if (format == "text/csv") {
+                    console.log("CSV is triggered");
+                    console.log(file);
+                } else if (format == "text/plain") {
+                    // let splitTemporary = temporary.split("\n");
+
+                    console.log("TXT is triggered");
+                    console.log(file);
                 }
             },
             formatData(tests) {
@@ -269,6 +287,9 @@
                         this.error = e;
                         this.snackbar = true;
                     });
+            },
+            sampleUploadModal(value) {
+                this.sampleModal = value;
             }
         },
         computed: {
