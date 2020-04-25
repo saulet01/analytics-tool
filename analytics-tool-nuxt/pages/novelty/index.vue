@@ -245,8 +245,8 @@
             fileHandle(events) {
                 this.loadingFile = true;
                 this.loadingValue = 40;
+
                 events.map((event, index) => {
-                    console.log(`Inside Events: ${index}`);
                     if (event != undefined) {
                         if (event.type == "text/csv") {
                             var self = this;
@@ -261,18 +261,15 @@
                                 }
                             });
                         }
+
                         var reader = new FileReader();
                         reader.readAsText(event);
                         reader.onload = () => {
-                            console.log("onLoad Triggered");
-                            console.log(event);
                             let returnFormat = this.handleFormat(
                                 event.type,
                                 reader.result
                             );
-                            console.log("Hadnle Format Triggered");
-                            let getItems = this.formatData(returnFormat);
-                            this.data[0].data = [...this.data[0].data, ...getItems];
+                            this.formatData(returnFormat);
                         };
                         reader.onloadend = () => {
                             if (index == events.length - 1) {
@@ -328,6 +325,7 @@
                             }
                         }
                     }
+                    // txtArray.push(txtObject);
                     this.fileArray.push(txtObject);
                     return this.fileArray;
                 }
@@ -344,10 +342,11 @@
 
                 this.startDate = moment.min(stringOfDates);
                 this.endDate = moment.max(stringOfDates).toDate();
+                let whoGivsFcuk = [];
                 let temporalData = tests.reduce(function(results, d) {
                     let dateValue = self.checkDate(d.date);
                     if (!dateValue) {
-                        self.loadErrors.push(d);
+                        whoGivsFcuk.push(d);
                     } else {
                         results.push({
                             source: d.source,
@@ -358,7 +357,11 @@
                     }
                     return results;
                 }, []);
-                return temporalData;
+                this.data[0].data = temporalData;
+                this.loadErrors = whoGivsFcuk;
+
+                // console.log(temporalData);
+                // console.log(temporalData);
             },
             detailedErrors() {
                 this.errorDetails = true;
