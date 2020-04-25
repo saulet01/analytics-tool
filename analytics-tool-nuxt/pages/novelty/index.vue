@@ -5,6 +5,20 @@
             <v-btn color="primary" small @click="sendIBMRequest()">Try Again</v-btn>
             <v-btn color="error" small @click="snackbar = false">Close</v-btn>
         </v-snackbar>
+        <v-snackbar v-model="snackbar2" top right color="error">
+            Couldn't load: {{ loadErrors.length }} item(s)
+            <v-btn color="primary" small @click="detailedErrors()">More Details</v-btn>
+            <v-btn small @click="snackbar2 = false">Close</v-btn>
+        </v-snackbar>
+        <v-dialog
+            v-model="errorDetails"
+            fullscreen
+            hide-overlay
+            transition="dialog-bottom-transition"
+        >
+            <DetailedError :loadErrors="loadErrors" @detailedError="detailedErrorStatus" />
+        </v-dialog>
+
         <v-row align="center" justify="center">
             <v-col lg="8" md="6" cols="4" class="text-center">
                 <h1
@@ -13,7 +27,7 @@
                 >Timeline Novelty Visualization</h1>
             </v-col>
             <v-col lg="2" md="3" cols="3">
-                <h1 class="title neutral-color">Events Count:</h1>
+                <h1 class="title neutral-color">Events Count: {{ data[0].data.length }}</h1>
             </v-col>
             <v-col lg="2" md="3" cols="5">
                 <v-chip
@@ -36,6 +50,7 @@
                     small-chips
                     accept=".json, .csv, .txt"
                     label="Load a file in .json or .csv format"
+                    multiple
                     @change="fileHandle"
                 ></v-file-input>
             </v-col>
@@ -53,7 +68,7 @@
                     <v-slide-x-transition>
                         <h1
                             class="text-center primary-color"
-                            v-show="data[0].data.length == 0"
+                            v-show="!loaded"
                         >Upload Data or Click "LOAD TEST" to display events</h1>
                     </v-slide-x-transition>
                 </div>
@@ -74,12 +89,22 @@
                     <v-icon small right>fas fa-heart</v-icon>
                 </v-btn>
                 <v-card :height="dynamicHeight" elevation="4" class="scroll">
-                    <v-card-title
-                        class="justify-space-between animated fadeIn"
-                    >{{ pickedData.title }}</v-card-title>
-                    <v-card-subtitle class="animated fadeIn">{{ pickedData.date }}</v-card-subtitle>
-                    <v-card-text class="wrapper animated fadeIn">{{ pickedData.description }}</v-card-text>
-                    <v-card-actions>{{ pickedData.source | sourceGet}}</v-card-actions>
+                    <v-card-title class="justify-space-between animated fadeIn">
+                        {{
+                        pickedData.title
+                        }}
+                    </v-card-title>
+                    <v-card-subtitle class="animated fadeIn">
+                        {{
+                        pickedData.date
+                        }}
+                    </v-card-subtitle>
+                    <v-card-text class="wrapper animated fadeIn">
+                        {{
+                        pickedData.description
+                        }}
+                    </v-card-text>
+                    <v-card-actions>{{ pickedData.source | sourceGet }}</v-card-actions>
                 </v-card>
             </v-col>
             <v-col cols="12" lg="6" md="10">
@@ -105,7 +130,14 @@
         </v-row>
         <Favorites id="favorites" :timelines="favorites" @sendToParent="messageFromFavorite" />
         <v-overlay :value="loadingFile" color="primary">
-            <v-progress-circular indeterminate size="64"></v-progress-circular>
+            <v-progress-circular
+                :rotate="360"
+                :size="100"
+                :width="10"
+                :value="loadingValue"
+                color="neutral"
+                indeterminate
+            >{{ loadingValue }}%</v-progress-circular>
         </v-overlay>
     </v-container>
 </template>
@@ -121,13 +153,16 @@
     import SampleData from "~/components/DataSample";
     import axios from "axios";
     import moment from "moment";
+    import DetailedError from "~/components/DetailedError";
+    import papaparse from "papaparse";
 
     export default {
         components: {
             WordCloud,
             Sentiment,
             Favorites,
-            SampleData
+            SampleData,
+            DetailedError
         },
         data() {
             return {
@@ -162,7 +197,25 @@
                     date: "",
                     description: ""
                 },
-                loadingFile: false
+                dataFormat: [
+                    "DD MMMM YYYY, HH:mm:ss",
+                    "DD MMMM YYYY, HHmm",
+                    "D MMMM YYYY, HH:mm:ss",
+                    "D MMMM YYYY, HHmm",
+                    "DD MMMM YYYY, HHmm",
+                    "DD MMMM YYYY",
+                    "D MMMM YYYY",
+                    "YYYY/MM/DD",
+                    "YYYY/MM/DD, HH:mm:ss",
+                    "YYYY/MM/DD, HHmm"
+                ],
+                loadingFile: false,
+                loaded: false,
+                loadErrors: [],
+                loadingValue: 0,
+                snackbar2: false,
+                errorDetails: false,
+                fileArray: []
             };
         },
         mounted() {
@@ -180,58 +233,138 @@
                 this.drawEvents();
             },
             drawEvents() {
+                this.loadingValue = 70;
                 d3.select("#event-chart")
                     .data([this.data])
                     .call(this.getChart);
+
+                this.loaded = true;
                 this.loadingFile = false;
+                this.loadErrors.length > 0 ? (this.snackbar2 = true) : "";
             },
-            fileHandle(event) {
-                if (event != undefined) {
-                    this.loadingFile = true;
-                    var reader = new FileReader();
-                    reader.readAsText(event);
-                    reader.onload = () => {
-                        let returnFormat = this.handleFormat(
-                            event.type,
-                            reader.result
-                        );
-                        this.data[0].data = this.formatData(returnFormat);
-                        this.drawEvents();
-                    };
+            fileHandle(events) {
+                this.loadingFile = true;
+                this.loadingValue = 40;
+                events.map((event, index) => {
+                    console.log(`Inside Events: ${index}`);
+                    if (event != undefined) {
+                        if (event.type == "text/csv") {
+                            var self = this;
+
+                            var dataTem = papaparse.parse(event, {
+                                header: true,
+                                complete: function(results) {
+                                    self.data[0].data = self.formatData(
+                                        results.data
+                                    );
+                                    self.drawEvents();
+                                }
+                            });
+                        }
+                        var reader = new FileReader();
+                        reader.readAsText(event);
+                        reader.onload = () => {
+                            console.log("onLoad Triggered");
+                            console.log(event);
+                            let returnFormat = this.handleFormat(
+                                event.type,
+                                reader.result
+                            );
+                            console.log("Hadnle Format Triggered");
+                            let getItems = this.formatData(returnFormat);
+                            this.data[0].data = [...this.data[0].data, ...getItems];
+                        };
+                        reader.onloadend = () => {
+                            if (index == events.length - 1) {
+                                this.drawEvents();
+                            }
+                        };
+                    }
+                });
+            },
+            checkDate(value) {
+                for (var dateFormat of this.dataFormat) {
+                    let dateNum = moment(value, dateFormat);
+                    if (dateNum.isValid()) {
+                        return dateNum;
+                    }
                 }
+                return false;
             },
             handleFormat(format, file) {
                 if (format == "application/json") {
                     let temporaryJSON = JSON.parse(file);
                     return temporaryJSON;
-                } else if (format == "text/csv") {
-                    console.log("CSV is triggered");
-                    console.log(file);
                 } else if (format == "text/plain") {
-                    // let splitTemporary = temporary.split("\n");
+                    let splitTemporary = file.split("\n");
+                    // let dataTemp = papaparse.parse(file);
+                    let txtData = splitTemporary.filter(function(d) {
+                        return d.length > 1;
+                    });
+                    let txtArray = [];
+                    let txtObject = {};
+                    txtObject["source"] = txtData[0];
+                    txtObject["title"] = txtData[1];
+                    txtObject["date"] = txtData[2];
+                    txtObject["description"] = txtData[3];
+                    if (txtData.length > 4) {
+                        for (let i = 4; i < txtData.length; i++) {
+                            txtObject["description"] += txtData[i];
+                        }
+                    }
 
-                    console.log("TXT is triggered");
-                    console.log(file);
+                    for (let i = 0; i < 5; i++) {
+                        if (
+                            (Number.isInteger(+txtObject["description"][0]) &&
+                                Number.isInteger(+txtObject["description"][1]) &&
+                                Number.isInteger(+txtObject["description"][3])) ||
+                            Number.isInteger(+txtObject["description"][5])
+                        ) {
+                            if (i == 0) {
+                                txtObject["date"] +=
+                                    ", " + txtObject["description"][i];
+                            } else {
+                                txtObject["date"] += txtObject["description"][i];
+                            }
+                        }
+                    }
+                    this.fileArray.push(txtObject);
+                    return this.fileArray;
                 }
             },
             formatData(tests) {
-                let stringOfDates = tests.map(d => {
-                    return moment(d.date, "DD MMMM YYYY");
-                });
-                this.startDate = moment.min(stringOfDates);
-                console.log(stringOfDates);
-                this.endDate = moment.max(stringOfDates).toDate();
-                console.log(this.startDate);
-                let temporalData = tests.map(d => {
-                    return {
-                        source: d.source,
-                        title: d.title,
-                        date: moment(d.date),
-                        description: d.description
-                    };
-                });
+                self = this;
+                var stringOfDates = tests.reduce(function(result, d) {
+                    let dateValue = self.checkDate(d.date);
+                    if (dateValue) {
+                        result.push(dateValue);
+                    }
+                    return result;
+                }, []);
 
+                this.startDate = moment.min(stringOfDates);
+                this.endDate = moment.max(stringOfDates).toDate();
+                let temporalData = tests.reduce(function(results, d) {
+                    let dateValue = self.checkDate(d.date);
+                    if (!dateValue) {
+                        self.loadErrors.push(d);
+                    } else {
+                        results.push({
+                            source: d.source,
+                            title: d.title,
+                            date: dateValue,
+                            description: d.description
+                        });
+                    }
+                    return results;
+                }, []);
                 return temporalData;
+            },
+            detailedErrors() {
+                this.errorDetails = true;
+            },
+            detailedErrorStatus(newValue) {
+                this.errorDetails = newValue;
             },
             updateText(event) {
                 this.pickedData = event;
@@ -242,7 +375,6 @@
             },
             messageFromFavorite(message) {
                 this.favorites = message;
-                // console.log(message);
             },
             sendIBMRequest() {
                 let analyzeText =
