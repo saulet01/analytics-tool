@@ -5,11 +5,33 @@
             <v-btn color="primary" small @click="sendIBMRequest()">Try Again</v-btn>
             <v-btn color="error" small @click="snackbar = false">Close</v-btn>
         </v-snackbar>
-        <v-snackbar v-model="snackbar2" top right color="error">
-            Couldn't load: {{ loadErrors.length }} item(s)
-            <v-btn color="primary" small @click="detailedErrors()">More Details</v-btn>
-            <v-btn small @click="snackbar2 = false">Close</v-btn>
+        <v-snackbar v-model="snackbar2" top right :color="snackbarColor">
+            <div class="d-flex flex-column">
+                <p
+                    class="font-weight-bold"
+                    v-show="fileArray.length > 0"
+                    :class="sucessClass"
+                    :style="successColor"
+                >Succesfully Loaded: {{ fileArray.length }} item(s)</p>
+                <p
+                    class="font-weight-bold"
+                    v-show="loadErrors.length > 0"
+                    :class="errorClass"
+                    :style="errorColor"
+                >Could not load: {{ loadErrors.length }} item(s)</p>
+            </div>
+
+            <div>
+                <v-btn
+                    v-show="loadErrors.length > 0"
+                    color="primary"
+                    small
+                    @click="detailedErrors()"
+                >More Details</v-btn>
+                <v-btn small @click="snackbar2 = false">Close</v-btn>
+            </div>
         </v-snackbar>
+
         <v-dialog
             v-model="errorDetails"
             fullscreen
@@ -20,14 +42,11 @@
         </v-dialog>
 
         <v-row align="center" justify="center">
-            <v-col lg="8" md="6" cols="4" class="text-center">
+            <v-col lg="10" md="9" cols="7" class="text-center">
                 <h1
                     class="display-1 font-weight-bold neutral-color"
                     :class="responsiveh1"
                 >Timeline Novelty Visualization</h1>
-            </v-col>
-            <v-col lg="2" md="3" cols="3">
-                <h1 class="title neutral-color">Events Count: {{ data[0].data.length }}</h1>
             </v-col>
             <v-col lg="2" md="3" cols="5">
                 <v-chip
@@ -45,20 +64,47 @@
 
         <v-row align="center" justify="center">
             <v-col cols="7">
-                <v-file-input
-                    show-size
-                    small-chips
-                    accept=".json, .csv, .txt"
-                    label="Load a file in .json or .csv format"
-                    multiple
-                    @change="fileHandle"
-                ></v-file-input>
+                <v-slide-y-transition>
+                    <v-file-input
+                        show-size
+                        small-chips
+                        accept=".json, .csv, .txt"
+                        label="Load a file in .json or .csv format"
+                        multiple
+                        @change="fileHandle"
+                        v-show="!loaded"
+                    ></v-file-input>
+                </v-slide-y-transition>
+
+                <v-slide-y-transition>
+                    >
+                    <h1
+                        v-show="fileArray.length > 0"
+                        class="title primary-color"
+                    >Item(s) Loaded: {{ fileArray.length }}</h1>
+                </v-slide-y-transition>
+                <v-slide-y-transition>
+                    <h1
+                        v-show="data[0].data.length > 0"
+                        class="title neutral-color"
+                    >Item(s) Displayed: {{ data[0].data.length }}</h1>
+                </v-slide-y-transition>
             </v-col>
             <v-col cols="4" class="d-flex justify-center">
-                <v-btn color="neutral" class="mx-2" dark @click="loadTest">Data Test</v-btn>
+                <v-btn
+                    color="neutral"
+                    :disabled="testButtonClicked"
+                    class="mx-2"
+                    :dark="!testButtonClicked"
+                    @click="loadTest"
+                >Data Test</v-btn>
                 <v-btn color="primary" dark @click.stop="sampleModal = true">Data Format</v-btn>
-                <v-dialog v-model="sampleModal" width="950">
-                    <SampleData :modalData="sampleModal" @returnValue="sampleUploadModal" />
+                <v-dialog v-model="sampleModal" width="1200">
+                    <SampleData
+                        :dateFormat="dataFormat"
+                        :modalData="sampleModal"
+                        @returnValue="sampleUploadModal"
+                    />
                 </v-dialog>
             </v-col>
         </v-row>
@@ -129,14 +175,15 @@
             </v-col>
         </v-row>
         <Favorites id="favorites" :timelines="favorites" @sendToParent="messageFromFavorite" />
-        <v-overlay :value="loadingFile" color="primary">
+        <v-overlay :value="loadingFile" color="primary" :opacity="overlaOpacityf">
             <v-progress-circular
-                :rotate="360"
+                indeterminate
                 :size="100"
                 :width="10"
                 :value="loadingValue"
                 color="neutral"
-                indeterminate
+                class="font-weight-bold"
+                style="font-size: 25px;"
             >{{ loadingValue }}%</v-progress-circular>
         </v-overlay>
     </v-container>
@@ -198,6 +245,17 @@
                     description: ""
                 },
                 dataFormat: [
+                    "MM/DD/YYYY",
+                    "MM/DD/YYYY HH:mm:ss",
+                    "MM/D/YYYY HH:mm:ss",
+                    "MM/D/YYYY",
+                    "MM/DD/YY",
+                    "MM/D/YY",
+                    "MM-DD-YYYY HH:mm:ss",
+                    "MM-DD-YYYY",
+                    "MM-D-YYYY",
+                    "MM-D-YYYY HH:mm:ss",
+                    "MM/DD/YYYY HH:mm:ss",
                     "DD MMMM YYYY, HH:mm:ss",
                     "DD MMMM YYYY, HHmm",
                     "D MMMM YYYY, HH:mm:ss",
@@ -215,7 +273,9 @@
                 loadingValue: 0,
                 snackbar2: false,
                 errorDetails: false,
-                fileArray: []
+                fileArray: [],
+                overlaOpacityf: 0.8,
+                testButtonClicked: false
             };
         },
         mounted() {
@@ -229,25 +289,45 @@
         methods: {
             loadTest() {
                 this.loadingFile = true;
-                this.data[0].data = this.formatData(tests);
+                this.formatData({ type: "array", tests: tests }, "test.json");
+                this.assignTime();
                 this.drawEvents();
             },
             drawEvents() {
-                this.loadingValue = 70;
+                this.loadingValue = 95;
                 d3.select("#event-chart")
                     .data([this.data])
                     .call(this.getChart);
 
-                this.loaded = true;
                 this.loadingFile = false;
-                this.loadErrors.length > 0 ? (this.snackbar2 = true) : "";
+                this.loadErrors.length > 0 || this.fileArray.length > 0
+                    ? (this.snackbar2 = true)
+                    : "";
+                this.loaded = true;
+                this.testButtonClicked = true;
+            },
+            assignTime() {
+                self = this;
+                var stringOfDates = this.data[0].data.reduce(function(result, d) {
+                    let dateValue = self.checkDate(d.date);
+                    if (dateValue) {
+                        result.push(dateValue);
+                    }
+                    return result;
+                }, []);
+
+                this.startDate = moment.min(stringOfDates);
+                this.endDate = moment.max(stringOfDates).toDate();
             },
             fileHandle(events) {
                 this.loadingFile = true;
-                this.loadingValue = 40;
-
+                this.loadingValue = 10;
+                let calculatedLoading = 90 / events.length;
+                let sumUpLoading = calculatedLoading;
                 events.map((event, index) => {
                     if (event != undefined) {
+                        // 0.09
+
                         if (event.type == "text/csv") {
                             var self = this;
 
@@ -265,14 +345,25 @@
                         var reader = new FileReader();
                         reader.readAsText(event);
                         reader.onload = () => {
+                            sumUpLoading += calculatedLoading;
+
+                            if (
+                                parseInt(sumUpLoading) > 0 &&
+                                this.loadingValue != parseInt(sumUpLoading)
+                            ) {
+                                this.loadingValue = parseInt(sumUpLoading);
+                                console.log(this.loadingValue);
+                            }
+
                             let returnFormat = this.handleFormat(
                                 event.type,
                                 reader.result
                             );
-                            this.formatData(returnFormat);
+                            this.formatData(returnFormat, event.name);
                         };
                         reader.onloadend = () => {
                             if (index == events.length - 1) {
+                                this.assignTime();
                                 this.drawEvents();
                             }
                         };
@@ -291,10 +382,12 @@
             handleFormat(format, file) {
                 if (format == "application/json") {
                     let temporaryJSON = JSON.parse(file);
-                    return temporaryJSON;
+                    return {
+                        type: "array",
+                        tests: temporaryJSON
+                    };
                 } else if (format == "text/plain") {
                     let splitTemporary = file.split("\n");
-                    // let dataTemp = papaparse.parse(file);
                     let txtData = splitTemporary.filter(function(d) {
                         return d.length > 1;
                     });
@@ -325,43 +418,50 @@
                             }
                         }
                     }
-                    // txtArray.push(txtObject);
-                    this.fileArray.push(txtObject);
-                    return this.fileArray;
+
+                    return {
+                        type: "object",
+                        tests: txtObject
+                    };
                 }
             },
-            formatData(tests) {
+            formatData(data, filename) {
                 self = this;
-                var stringOfDates = tests.reduce(function(result, d) {
-                    let dateValue = self.checkDate(d.date);
-                    if (dateValue) {
-                        result.push(dateValue);
-                    }
-                    return result;
-                }, []);
 
-                this.startDate = moment.min(stringOfDates);
-                this.endDate = moment.max(stringOfDates).toDate();
-                let whoGivsFcuk = [];
-                let temporalData = tests.reduce(function(results, d) {
-                    let dateValue = self.checkDate(d.date);
+                if (data.type === "object") {
+                    let dateValue = self.checkDate(data.tests.date);
                     if (!dateValue) {
-                        whoGivsFcuk.push(d);
+                        data.tests.file = filename;
+                        self.loadErrors.push(data.tests);
                     } else {
-                        results.push({
-                            source: d.source,
-                            title: d.title,
+                        self.data[0].data.push({
+                            source: data.tests.source,
+                            title: data.tests.title,
                             date: dateValue,
-                            description: d.description
+                            description: data.tests.description
                         });
                     }
-                    return results;
-                }, []);
-                this.data[0].data = temporalData;
-                this.loadErrors = whoGivsFcuk;
+                    this.fileArray = this.data[0].data;
+                } else {
+                    console.log("Array triggered");
 
-                // console.log(temporalData);
-                // console.log(temporalData);
+                    let temporalData = data.tests.reduce(function(results, d) {
+                        let dateValue = self.checkDate(d.date);
+                        if (!dateValue) {
+                            d.file = filename;
+                            self.loadErrors.push(d);
+                        } else {
+                            self.data[0].data.push({
+                                source: d.source,
+                                title: d.title,
+                                date: dateValue,
+                                description: d.description
+                            });
+                        }
+                        return results;
+                    }, []);
+                    this.fileArray = this.data[0].data;
+                }
             },
             detailedErrors() {
                 this.errorDetails = true;
@@ -428,17 +528,33 @@
             }
         },
         computed: {
-            returnJSON() {
-                var obj = {
-                    prop_1: {
-                        prop_11: "val_11",
-                        prop_12: "val_12"
-                    },
-                    prop_2: "val_2",
-                    prop_3: "val_3"
-                };
-
-                return JSON.stringify(obj);
+            sucessClass() {
+                return this.loadErrors.length == 0 ? "mt-3" : "";
+            },
+            successColor() {
+                return this.fileArray.length > 0 && this.loadErrors.length == 0
+                    ? "color: #fff"
+                    : "color: #5CB65F";
+            },
+            errorClass() {
+                return this.fileArray.length == 0 ? "mt-3" : "";
+            },
+            errorColor() {
+                return this.loadErrors.length > 0 && this.fileArray.length == 0
+                    ? "color: #fff"
+                    : "color: #ff5252";
+            },
+            snackbarColor() {
+                if (this.fileArray.length > 0 && this.loadErrors.length == 0) {
+                    return "success";
+                } else if (
+                    this.loadErrors.length > 0 &&
+                    this.fileArray.length == 0
+                ) {
+                    return "error";
+                } else {
+                    return "white";
+                }
             },
             dynamicHeight() {
                 return this.pickedData.title ? 390 : 430;

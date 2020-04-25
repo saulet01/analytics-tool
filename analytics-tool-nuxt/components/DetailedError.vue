@@ -19,6 +19,10 @@
                             <th
                                 style="background-color: #fe7d3b; color: #fff;"
                                 class="text-center font-weight-bold"
+                            >filename</th>
+                            <th
+                                style="background-color: #fe7d3b; color: #fff;"
+                                class="text-center font-weight-bold"
                             >title</th>
                             <th
                                 style="background-color: #fe7d3b; color: #fff;"
@@ -33,6 +37,7 @@
                     <tbody>
                         <tr v-for="(item, index) in loadErrors" :key="'error'+index">
                             <td>{{ index + 1 }}</td>
+                            <td>{{ item.file }}</td>
                             <td>{{ item.title }}</td>
                             <td>{{ item.date }}</td>
                             <td>{{ item.description }}</td>
