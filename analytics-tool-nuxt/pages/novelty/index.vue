@@ -94,11 +94,22 @@
                 <v-btn
                     color="neutral"
                     :disabled="testButtonClicked"
-                    class="mx-2"
                     :dark="!testButtonClicked"
                     @click="loadTest"
                 >Data Test</v-btn>
-                <v-btn color="primary" dark @click.stop="sampleModal = true">Data Format</v-btn>
+                <v-btn
+                    color="primary"
+                    class="mx-2"
+                    dark
+                    @click.stop="sampleModal = true"
+                >Data Format</v-btn>
+                <v-btn
+                    @click="saveSVG"
+                    :disabled="downloadedSVG"
+                    :dark="!downloadedSVG"
+                    color="success"
+                    v-show="data[0].data.length > 0"
+                >Save SVG</v-btn>
                 <v-dialog v-model="sampleModal" width="1200">
                     <SampleData
                         :dateFormat="dataFormat"
@@ -110,7 +121,12 @@
         </v-row>
         <v-row>
             <v-col cols="12">
-                <div id="event-chart" class="elevation-5 pt-10" style="min-height: 150px;">
+                <div
+                    id="event-chart"
+                    class="elevation-5 pt-10"
+                    style="min-height: 150px;"
+                    ref="chart"
+                >
                     <v-slide-x-transition>
                         <h1
                             class="text-center primary-color"
@@ -202,6 +218,7 @@
     import moment from "moment";
     import DetailedError from "~/components/DetailedError";
     import papaparse from "papaparse";
+    import saveSvgAsPng from "save-svg-as-png";
 
     export default {
         components: {
@@ -275,7 +292,8 @@
                 errorDetails: false,
                 fileArray: [],
                 overlaOpacityf: 0.8,
-                testButtonClicked: false
+                testButtonClicked: false,
+                downloadedSVG: false
             };
         },
         mounted() {
@@ -287,6 +305,16 @@
             }
         },
         methods: {
+            async saveSVG() {
+                let getImage = await saveSvgAsPng.saveSvgAsPng(
+                    document.getElementsByTagName("svg")[0],
+                    "novelty.png",
+                    {
+                        backgroundColor: "#FFFFFF"
+                    }
+                );
+                this.downloadedSVG = true;
+            },
             loadTest() {
                 this.loadingFile = true;
                 this.formatData({ type: "array", tests: tests }, "test.json");
@@ -298,6 +326,12 @@
                 d3.select("#event-chart")
                     .data([this.data])
                     .call(this.getChart);
+
+                d3.selectAll(".line-label").style("display", "none");
+                d3.select("#event-chart .viewport").style(
+                    "transform",
+                    "translate(-100px, 20px)"
+                );
 
                 this.loadingFile = false;
                 this.loadErrors.length > 0 || this.fileArray.length > 0
@@ -666,6 +700,7 @@ circle:hover {
     font-size: 1.2em;
     fill: #fe7d3b;
 }
+
 .wrapper {
     white-space: pre-wrap;
 }
