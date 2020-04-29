@@ -57,7 +57,7 @@
                     :disabled="testButtonClicked"
                     :dark="!testButtonClicked"
                     @click="loadTest"
-                >Data Test</v-btn>
+                >Demo Test</v-btn>
                 <v-btn
                     color="primary"
                     class="mx-2"
@@ -303,6 +303,7 @@
             SelectionComponent,
             EmailSample
         },
+        name: "Email",
         head() {
             return {
                 title: this.titleMain
@@ -367,6 +368,7 @@
                 sampleModal: false,
                 dataFormat: [
                     "MM/DD/YYYY",
+                    "YYYY-MM-DD",
                     "MM/DD/YYYY HH:mm:ss",
                     "MM/D/YYYY HH:mm:ss",
                     "MM/D/YYYY",
@@ -409,7 +411,7 @@
                     let rangeFinish = moment(this.dates[1], "YYYY-MM-DD");
                     let getRange = moment.range(rangeStart, rangeFinish);
                     let newRangedData = this.original.filter(d =>
-                        getRange.contains(moment(d.Date, "MM/DD/YYYY"))
+                        getRange.contains(self.checkDate(d.Date))
                     );
                     this.draw(newRangedData);
                 }
@@ -489,18 +491,29 @@
                     }
                 });
             },
-
+            checkDate(value) {
+                for (var dateFormat of this.dataFormat) {
+                    let dateNum = moment(value, dateFormat);
+                    if (dateNum.isValid()) {
+                        return dateNum;
+                    }
+                }
+                return false;
+            },
             fetchData() {
                 // let data = await d3.json("./dumb.json");
                 // this.original = emails;
                 // this.clusterData = clusters;
-                console.log("Triggered!");
-                console.log(this.original);
-                console.log(this.clusterData);
 
-                let stringOFDates = this.original.map(d => {
-                    return moment(d.Date, "MM/DD/YYYY");
-                });
+                self = this;
+                let stringOFDates = this.original.reduce(function(result, d) {
+                    let dateValue = self.checkDate(d.Date);
+                    if (dateValue) {
+                        result.push(dateValue);
+                    }
+                    return result;
+                }, []);
+
                 let justMinDate = moment.min(stringOFDates);
                 this.datePicker.limitMin = justMinDate.format("YYYY-MM-DD");
 
@@ -517,11 +530,6 @@
                 this.datePicker.limitMax = moment
                     .max(stringOFDates)
                     .format("YYYY-MM-DD");
-
-                // this.draw(newData);
-                // this.data = this.wrangleData(this.formatedData);
-                // this.links = this.drawLinks();
-                // this.nodes = this.drawNodes();
             },
             draw(data) {
                 if (data) {
@@ -607,11 +615,17 @@
                         let searchType = records.find(
                             element => element.email === d.From
                         );
-                        console.log(searchType);
-                        results.push({
-                            id: d.From,
-                            group: searchType["type"]
-                        });
+                        if (searchType != undefined) {
+                            results.push({
+                                id: d.From,
+                                group: searchType["type"]
+                            });
+                        } else {
+                            results.push({
+                                id: d.From,
+                                group: d.From.split("@")[1]
+                            });
+                        }
                     }
                     // Convert String to Array
                     let breaker = d.To.split(",").map(function(word) {
@@ -621,10 +635,17 @@
                             let searchType = records.find(
                                 element => element.email === word
                             );
-                            results.push({
-                                id: word,
-                                group: searchType["type"]
-                            });
+                            if (searchType != undefined) {
+                                results.push({
+                                    id: word,
+                                    group: searchType["type"]
+                                });
+                            } else {
+                                results.push({
+                                    id: word,
+                                    group: word.split("@")[[1]]
+                                });
+                            }
                         }
                         return word;
                     });

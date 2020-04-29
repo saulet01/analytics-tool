@@ -21,19 +21,20 @@
             <div>
                 <p class="title primary-color">.json</p>
                 <pre class="d-flex justify-space-between">
-                                <code style="background-color: #fff;">
-        [
-            {
-                "title": "My Sample Title",
-                "description": "My Sample Description",
-                "date": "01/01/2020 00:00:00"
-            },
-            {
-                ...
-            }
-        ]
-                                </code>
-                                </pre>
+                                    <code style="background-color: #fff;">
+            [
+                {
+                    "From": "test@gmail.com",
+                    "To": "test2@gmail.com",
+                    "Subject": "My Subject"
+                    "date": "01/01/2020 00:00:00"
+                },
+                {
+                    ...
+                }
+            ]
+                                    </code>
+                                    </pre>
             </div>
             <div>
                 <p class="title primary-color">.csv</p>
@@ -41,15 +42,17 @@
                     <template v-slot:default>
                         <thead>
                             <tr>
-                                <th class="text-left">title</th>
-                                <th class="text-left">description</th>
-                                <th class="text-left">date</th>
+                                <th class="text-left">From</th>
+                                <th class="text-left">To</th>
+                                <th class="text-left">Subject</th>
+                                <th class="text-left">Date</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>My Sample Title</td>
-                                <td>My Sample Description</td>
+                                <td>test@gmail.com</td>
+                                <td>test2@gmail.com</td>
+                                <td>My Subject</td>
                                 <td>01/01/2020 00:00:00</td>
                             </tr>
                             <tr>
@@ -60,13 +63,6 @@
                         </tbody>
                     </template>
                 </v-simple-table>
-            </div>
-            <div>
-                <p class="title primary-color">.txt</p>
-                <p>My Sample Source</p>
-                <p>My Sample Title</p>
-                <p>01/01/2020 00:00:00</p>
-                <p>My Sample Description</p>
             </div>
         </v-card-text>
 
