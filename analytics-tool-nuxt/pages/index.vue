@@ -27,6 +27,11 @@
 
 <script>
     export default {
+        head() {
+            return {
+                title: this.titleMain
+            };
+        },
         data() {
             return {
                 tools: [
@@ -44,7 +49,8 @@
                         btnName: "Novelty",
                         btnLink: "/novelty"
                     }
-                ]
+                ],
+                titleMain: "Analytics Tool"
             };
         }
     };

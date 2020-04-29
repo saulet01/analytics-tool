@@ -69,7 +69,7 @@
                         show-size
                         small-chips
                         accept=".json, .csv, .txt"
-                        label="Load a file in .json or .csv format"
+                        label="Load a file in .json, .csv or .txt formats"
                         multiple
                         @change="fileHandle"
                         v-show="!loaded"
@@ -228,6 +228,11 @@
             SampleData,
             DetailedError
         },
+        head() {
+            return {
+                title: this.titleMain
+            };
+        },
         data() {
             return {
                 data: [
@@ -240,6 +245,7 @@
                         data: []
                     }
                 ],
+                titleMain: "Timeline Novelty Visualization",
                 sampleModal: false,
                 isLoading: false,
                 radius: 10,
@@ -505,7 +511,7 @@
             },
             updateText(event) {
                 this.pickedData = event;
-                // this.sendIBMRequest();
+                this.sendIBMRequest();
             },
             addFavorite(selected) {
                 this.favorites.push(selected);

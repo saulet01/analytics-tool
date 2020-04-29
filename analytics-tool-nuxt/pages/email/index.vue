@@ -1,46 +1,76 @@
 <template>
-    <div>
+    <v-container fluid>
         <v-row align="center" justify="center">
-            <v-col cols="3" sm="6" md="3">
-                <v-menu
-                    v-model="menu"
-                    :nudge-right="30"
-                    transition="slide-y-transition"
-                    offset-y
-                    min-width="290px"
-                    ref="menu"
-                    :close-on-content-click="false"
-                >
-                    <template v-slot:activator="{ on }">
-                        <v-text-field
-                            v-model="getDates"
-                            label="Pick a date or range"
-                            prepend-icon="far fa-calendar-alt"
-                            readonly
-                            v-on="on"
-                            color="primary"
-                        ></v-text-field>
-                    </template>
-
-                    <v-date-picker
-                        v-model="dates"
-                        :min="datePicker.limitMin"
-                        :max="datePicker.limitMax"
-                        @input="menu2 = false"
-                        range
-                        color="primary"
+            <v-col cols="5">
+                <v-slide-y-transition>
+                    <v-file-input
+                        show-size
+                        small-chips
+                        accept=".json, .csv"
+                        label="Load a file in .json or .csv format"
+                        multiple
+                        @change="fileHandle"
+                        v-show="!loaded"
+                    ></v-file-input>
+                </v-slide-y-transition>
+                <v-slide-y-transition>
+                    <v-menu
+                        v-model="menu"
+                        :nudge-right="30"
+                        transition="slide-y-transition"
+                        offset-y
+                        min-width="290px"
+                        ref="menu"
+                        :close-on-content-click="false"
                     >
-                        <v-spacer></v-spacer>
-                        <v-btn text color="alt" @click="menu = false">Cancel</v-btn>
-                        <v-btn text color="primary" @click="$refs.menu.save(dates)">OK</v-btn>
-                    </v-date-picker>
-                </v-menu>
+                        <template v-slot:activator="{ on }">
+                            <v-text-field
+                                v-model="getDates"
+                                label="Pick a date or range"
+                                prepend-icon="far fa-calendar-alt"
+                                readonly
+                                v-on="on"
+                                color="primary"
+                                v-show="original.length > 0"
+                            ></v-text-field>
+                        </template>
+
+                        <v-date-picker
+                            v-model="dates"
+                            :min="datePicker.limitMin"
+                            :max="datePicker.limitMax"
+                            @input="menu2 = false"
+                            range
+                            color="primary"
+                        >
+                            <v-spacer></v-spacer>
+                            <v-btn text color="alt" @click="menu = false">Cancel</v-btn>
+                            <v-btn text color="primary" @click="$refs.menu.save(dates)">OK</v-btn>
+                        </v-date-picker>
+                    </v-menu>
+                </v-slide-y-transition>
             </v-col>
+
             <v-col cols="3">
+                <v-btn
+                    color="neutral"
+                    :disabled="testButtonClicked"
+                    :dark="!testButtonClicked"
+                    @click="loadTest"
+                >Data Test</v-btn>
+                <v-btn
+                    color="primary"
+                    class="mx-2"
+                    dark
+                    @click.stop="sampleModal = true"
+                >Data Format</v-btn>
+            </v-col>
+            <v-col cols="3" v-show="original.length > 0">
                 <p class="title neutral-color">Total Email: {{ original.length }}</p>
             </v-col>
         </v-row>
-        <v-row>
+
+        <v-row justify="center" align="center">
             <v-col lg="7" md="7" sm="12" cols="12">
                 <v-card elevation="3">
                     <div class="svg-container" ref="saveSvg">
@@ -95,7 +125,11 @@
             </v-col>
             <v-col lg="5" md="5" sm="12" cols="12">
                 <v-card class="d-flex flex-row justify-center align-center">
-                    <v-switch v-model="switchExtensions" label="Display Email Domain"></v-switch>
+                    <v-switch
+                        :disabled="!loaded"
+                        v-model="switchExtensions"
+                        label="Display Email Domain"
+                    ></v-switch>
 
                     <v-menu
                         offset-y
@@ -109,11 +143,12 @@
                             <v-btn
                                 width="150"
                                 v-on="on"
-                                dark
                                 color="primary"
                                 @click="showSettings = true"
                                 class="mx-2"
                                 small
+                                :disabled="!loaded"
+                                :dark="loaded"
                             >
                                 Settings
                                 <v-icon small class="ml-2">fas fa-cog</v-icon>
@@ -193,7 +228,14 @@
                         </v-card>
                     </v-menu>
 
-                    <v-btn width="150" small color="neutral" dark @click="saveSvg">
+                    <v-btn
+                        width="150"
+                        :disabled="!loaded"
+                        :dark="loaded"
+                        small
+                        color="neutral"
+                        @click="saveSvg"
+                    >
                         Save Image
                         <v-icon small class="ml-2">fas fa-save</v-icon>
                     </v-btn>
@@ -219,12 +261,27 @@
                 </v-card>
             </v-col>
         </v-row>
-        <v-overlay :value="overlay">
-            <v-progress-circular indeterminate size="64"></v-progress-circular>
+        <v-overlay :value="overlay" color="primary" :opacity="overlayOpacity">
+            <v-progress-circular
+                indeterminate
+                :size="100"
+                :width="10"
+                :value="loadingCircleValue"
+                color="neutral"
+                class="font-weight-bold"
+                style="font-size: 25px;"
+            >{{ loadingCircleValue }}%</v-progress-circular>
         </v-overlay>
 
         <EdgeTable v-bind:originaldata="original" />
-    </div>
+        <v-dialog v-model="sampleModal" width="1200">
+            <EmailSample
+                :dateFormat="dataFormat"
+                :modalData="sampleModal"
+                @returnValue="sampleUploadModal"
+            />
+        </v-dialog>
+    </v-container>
 </template>
 
 <script>
@@ -237,11 +294,19 @@
     import emails from "~/static/email_100.json";
     import clusters from "~/static/EmployeeRecords.json";
     import saveSvgAsPng from "save-svg-as-png";
+    import papaparse from "papaparse";
+    import EmailSample from "~/components/DataSampleEmail";
 
     export default {
         components: {
             EdgeTable,
-            SelectionComponent
+            SelectionComponent,
+            EmailSample
+        },
+        head() {
+            return {
+                title: this.titleMain
+            };
         },
 
         filters: {
@@ -254,6 +319,7 @@
         },
         data() {
             return {
+                titleMain: "Email Edge Bundling Visualization",
                 currentUser: "",
                 uniqueClusters: [],
                 overlay: false,
@@ -293,11 +359,39 @@
                 formatedData: [],
                 clusterData: [],
                 dialog: false,
-                output: null
+                output: null,
+                overlayOpacity: 0.8,
+                loadingCircleValue: 0,
+                testButtonClicked: false,
+                loaded: false,
+                sampleModal: false,
+                dataFormat: [
+                    "MM/DD/YYYY",
+                    "MM/DD/YYYY HH:mm:ss",
+                    "MM/D/YYYY HH:mm:ss",
+                    "MM/D/YYYY",
+                    "MM/DD/YY",
+                    "MM/D/YY",
+                    "MM-DD-YYYY HH:mm:ss",
+                    "MM-DD-YYYY",
+                    "MM-D-YYYY",
+                    "MM-D-YYYY HH:mm:ss",
+                    "MM/DD/YYYY HH:mm:ss",
+                    "DD MMMM YYYY, HH:mm:ss",
+                    "DD MMMM YYYY, HHmm",
+                    "D MMMM YYYY, HH:mm:ss",
+                    "D MMMM YYYY, HHmm",
+                    "DD MMMM YYYY, HHmm",
+                    "DD MMMM YYYY",
+                    "D MMMM YYYY",
+                    "YYYY/MM/DD",
+                    "YYYY/MM/DD, HH:mm:ss",
+                    "YYYY/MM/DD, HHmm"
+                ]
             };
         },
         mounted() {
-            this.fetchData();
+            // this.fetchData();
             // this.draw();
             // this.drawNodes();
         },
@@ -322,6 +416,16 @@
             }
         },
         methods: {
+            loadTest() {
+                this.overlay = true;
+                this.loadingCircleValue = 50;
+                this.original = emails;
+                this.clusterData = clusters;
+                this.fetchData();
+                this.overlay = false;
+                this.testButtonClicked = true;
+            },
+
             async saveSvg() {
                 this.overlay = true;
                 let getImage = await saveSvgAsPng.saveSvgAsPng(
@@ -352,11 +456,47 @@
                 };
             },
 
+            fileHandle(files) {
+                this.overlay = true;
+                this.loadingCircleValue = 10;
+                files.map((file, index) => {
+                    if (file != undefined) {
+                        if (file.type == "text/csv") {
+                            var self = this;
+
+                            var dataTem = papaparse.parse(file, {
+                                header: true,
+                                complete: function(results) {
+                                    let emailChecker = results.meta.fields.some(
+                                        d =>
+                                            d.toLowerCase() === "from" ||
+                                            d.toLowerCase() === "to"
+                                    );
+                                    if (emailChecker) {
+                                        self.original = results.data;
+                                    } else {
+                                        self.clusterData = results.data;
+                                    }
+
+                                    if (index == files.length - 1) {
+                                        self.loadingCircleValue = 30;
+                                        self.fetchData();
+                                    }
+                                }
+                            });
+                        } else {
+                        }
+                    }
+                });
+            },
+
             fetchData() {
                 // let data = await d3.json("./dumb.json");
-
-                this.original = emails;
-                this.clusterData = clusters;
+                // this.original = emails;
+                // this.clusterData = clusters;
+                console.log("Triggered!");
+                console.log(this.original);
+                console.log(this.clusterData);
 
                 let stringOFDates = this.original.map(d => {
                     return moment(d.Date, "MM/DD/YYYY");
@@ -392,8 +532,9 @@
                         this.clusterData
                     );
                 }
-
                 this.data = this.wrangleData(this.formatedData);
+                this.overlay = false;
+                this.loaded = true;
                 // this.links = this.drawLinks();
                 // this.nodes = this.drawNodes();
             },
@@ -466,6 +607,7 @@
                         let searchType = records.find(
                             element => element.email === d.From
                         );
+                        console.log(searchType);
                         results.push({
                             id: d.From,
                             group: searchType["type"]
@@ -610,6 +752,9 @@
                     });
                     return this.links;
                 }
+            },
+            sampleUploadModal(newValue) {
+                this.sampleModal = newValue;
             }
         },
         computed: {
