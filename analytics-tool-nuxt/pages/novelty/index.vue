@@ -54,10 +54,10 @@
                     close
                     color="primary"
                     text-color="white"
-                    close-icon="fas fa-heart"
+                    close-icon="fas fa-bookmark"
                     to="#favorites"
                 >
-                    <v-avatar left color="neutral">{{ countFavorites }}</v-avatar>Favorites
+                    <v-avatar left color="neutral">{{ countFavorites }}</v-avatar>Bookmarks
                 </v-chip>
             </v-col>
         </v-row>
@@ -96,7 +96,7 @@
                     :disabled="testButtonClicked"
                     :dark="!testButtonClicked"
                     @click="loadTest"
-                >Data Test</v-btn>
+                >Demo Test</v-btn>
                 <v-btn
                     color="primary"
                     class="mx-2"
@@ -131,7 +131,7 @@
                         <h1
                             class="text-center primary-color"
                             v-show="!loaded"
-                        >Upload Data or Click "LOAD TEST" to display events</h1>
+                        >Upload Data or Click "DEMO TEST" to display events</h1>
                     </v-slide-x-transition>
                 </div>
             </v-col>
@@ -147,7 +147,7 @@
                     :style="toggled"
                     :disabled="checkSelected"
                 >
-                    Add to Favorites
+                    Add to Bookmarks
                     <v-icon small right>fas fa-heart</v-icon>
                 </v-btn>
                 <v-card :height="dynamicHeight" elevation="4" class="scroll">

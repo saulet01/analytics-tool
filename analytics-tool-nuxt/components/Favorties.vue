@@ -3,8 +3,8 @@
         <v-row align="center" justify="center">
             <v-col cols="8" class="text-center">
                 <h1 class="text-center neutral-color mt-4" ref="capture">
-                    Favorites
-                    <v-icon color="neutral" large>fas fa-heart</v-icon>
+                    Bookmarks
+                    <v-icon color="neutral" large>fas fa-bookmark</v-icon>
                 </h1>
             </v-col>
             <v-col cols="4" class="d-flex flex-row align-center">
@@ -21,7 +21,7 @@
                 <v-switch
                     :disabled="disableItem"
                     v-model="switch1"
-                    label="Remove Events"
+                    label="Remove Items"
                     color="red darken-3"
                     hide-details
                     inset

@@ -85,7 +85,7 @@
                                     v-for="(email, index) in item.to"
                                     :key="index"
                                     style="font-size: 0.8em;"
-                                >{{ email }}</v-text>
+                                >{{ email | displayTo(index, item.to) }}</v-text>
                             </div>
                         </template>
                         <template v-slot:item.from="{ item }">
@@ -127,6 +127,12 @@
                 selectedName: "",
                 fixedHeader: true
             };
+        },
+
+        filters: {
+            displayTo(newValue, index, arrayTo) {
+                return index == arrayTo.length - 1 ? newValue : newValue + ", ";
+            }
         },
 
         computed: {

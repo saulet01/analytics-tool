@@ -1,6 +1,13 @@
 <template>
     <v-container fluid>
         <v-row align="center" justify="center">
+            <v-col cols="12">
+                <h1
+                    class="display-1 font-weight-bold text-center neutral-color"
+                >Email Edge Bundling Visualization</h1>
+            </v-col>
+        </v-row>
+        <v-row align="center" justify="center">
             <v-col cols="5">
                 <v-slide-y-transition>
                     <v-file-input
@@ -73,6 +80,13 @@
         <v-row justify="center" align="center">
             <v-col lg="7" md="7" sm="12" cols="12">
                 <v-card elevation="3">
+                    <v-slide-x-transition>
+                        <v-card-text v-show="!loaded">
+                            <h1
+                                class="text-center primary-color"
+                            >Upload Data or Click "DEMO TEST" to display email data</h1>
+                        </v-card-text>
+                    </v-slide-x-transition>
                     <div class="svg-container" ref="saveSvg">
                         <div class id="edge">
                             <svg
@@ -291,7 +305,7 @@
     import Moment from "moment";
     import { extendMoment } from "moment-range";
     const moment = extendMoment(Moment);
-    import emails from "~/static/email_100.json";
+    import emails from "~/static/email_700.json";
     import clusters from "~/static/EmployeeRecords.json";
     import saveSvgAsPng from "save-svg-as-png";
     import papaparse from "papaparse";
